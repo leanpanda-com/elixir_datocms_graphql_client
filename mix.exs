@@ -1,4 +1,4 @@
-defmodule DatoCMS.Graphql.Client.MixProject do
+defmodule DatoCMS.GraphqlClient.MixProject do
   use Mix.Project
 
   def project do
