@@ -18,6 +18,8 @@ defmodule DatoCMS.GraphqlClient.MixProject do
   end
 
   defp deps do
-    []
+    [
+      {:neuron, "~> 4.1.0"}
+    ]
   end
 end
