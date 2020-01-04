@@ -13,14 +13,25 @@ defmodule DatoCMS.GraphQLClient do
     Neuron.Config.set(parse_options: [keys: :atoms])
   end
 
-  def fetch!(key, query) do
-    {:ok, page} = fetch(key, query)
+  def fetch!(key, query, params \\ %{}) do
+    {:ok, page} = fetch(key, query, params)
     page
   end
 
-  def fetch(key, query) do
+  def fetch(key, query, params \\ %{}) do
     keyed = "query { #{key} #{query} }"
-    Neuron.query(keyed)
+    Neuron.query(keyed, params)
+    |> handle_fetch_response(key)
+  end
+
+  def fetch_localized!(key, locale, query, params \\ %{}) do
+    {:ok, page} = fetch_localized(key, locale, query, params)
+    page
+  end
+
+  def fetch_localized(key, locale, query, params \\ %{}) do
+    keyed = "query { #{key}(locale: $locale) #{query} }"
+    Neuron.query(keyed, with_locale(params, locale))
     |> handle_fetch_response(key)
   end
 
@@ -40,6 +51,34 @@ defmodule DatoCMS.GraphQLClient do
     """
   end
 
+  def fetch_all!(key, query, params \\ %{}) do
+    {:ok, pages} = fetch_all(key, query, params)
+    pages
+  end
+
+  def fetch_all(key, query, params \\ %{}) do
+    paginated = """
+      query paginated($first: IntType!, $skip: IntType!) {
+        #{key}(first: $first, skip: $skip) #{query}
+      }
+    """
+    do_fetch_all(key, paginated, with_default_pagination(params))
+  end
+
+  def fetch_all_localized!(key, locale, query, params \\ %{}) do
+    {:ok, pages} = fetch_all_localized(key, locale, query, params)
+    pages
+  end
+
+  def fetch_all_localized(key, locale, query, params \\ %{}) do
+    paginated = """
+      query paginated($first: IntType!, $skip: IntType!) {
+        #{key}(locale: $locale, first: $first, skip: $skip) #{query}
+      }
+    """
+    do_fetch_all(key, paginated, with_locale(with_default_pagination(params), locale))
+  end
+
   defp handle_fetch_response({:ok, %Neuron.Response{body: %{errors: errors}}}, _key) do
     {:error, errors}
   end
@@ -47,39 +86,32 @@ defmodule DatoCMS.GraphQLClient do
     {:ok, data[key]}
   end
 
-  def fetch_all!(key, query, options \\ []) do
-    {:ok, pages} = fetch_all(key, query, options)
-    pages
+  defp do_fetch_all(key, paginated, params) do
+    {:ok, response} = Neuron.query(paginated, params)
+    handle_fetch_all_response(response.body, key, paginated, params)
   end
 
-  def fetch_all(key, query, options \\ []) do
-    paginated = """
-      query paginated($first: IntType!, $skip: IntType!) {
-        #{key}(first: $first, skip: $skip) #{query}
-      }
-    """
-    skip = options[:skip] || 0
-    first = options[:first] || @per_page
-    do_fetch_all(key, paginated, [skip: skip, first: first])
+  defp handle_fetch_all_response(%{errors: errors} = _body, _key, _paginated, _params) do
+    {:error, errors}
   end
-
-  defp do_fetch_all(key, paginated, options) do
-    skip = options[:skip]
-    first = options[:first]
-    {:ok, response} = Neuron.query(paginated, %{skip: skip, first: first})
-    handle_fetch_all_response(response.body, key, paginated, options)
-  end
-
-  defp handle_fetch_all_response(%{errors: errors} = body, _key, _paginated, _options), do: {:error, errors}
-  defp handle_fetch_all_response(body, key, paginated, options) do
+  defp handle_fetch_all_response(body, key, paginated, params) do
     page = body[:data][key]
     case page do
       [] -> {:ok, []}
       _  ->
-        skip = options[:skip]
-        first = options[:first]
-        {:ok, pages} = do_fetch_all(key, paginated, Keyword.put(options, :skip, skip + first))
+        params = Map.put(params, :skip, params.skip + params.first)
+        {:ok, pages} = do_fetch_all(key, paginated, params)
         {:ok, page ++ pages}
     end
   end
+
+  defp with_default_pagination(params) do
+    skip = params[:skip] || 0
+    first = params[:first] || @per_page
+    params
+      |> Map.put(:skip, skip)
+      |> Map.put(:first, first)
+  end
+
+  defp with_locale(params, locale), do: Map.put(params, :locale, locale)
 end
