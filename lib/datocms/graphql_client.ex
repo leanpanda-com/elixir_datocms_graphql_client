@@ -14,8 +14,16 @@ defmodule DatoCMS.GraphQLClient do
   end
 
   def fetch!(key, query, params \\ %{}) do
-    {:ok, page} = fetch(key, query, params)
-    page
+    case fetch(key, query, params) do
+      {:ok, page} -> page
+      {:error, error} ->
+        raise """
+          GraphQL query '#{key}':
+          '#{query}'
+          params: #{inspect(params)}
+          error: #{inspect(error)}
+        """
+    end
   end
 
   def fetch(key, query, params \\ %{}) do
@@ -25,13 +33,27 @@ defmodule DatoCMS.GraphQLClient do
   end
 
   def fetch_localized!(key, locale, query, params \\ %{}) do
-    {:ok, page} = fetch_localized(key, locale, query, params)
-    page
+    case fetch_localized(key, locale, query, params) do
+      {:ok, page} -> page
+      {:error, error} ->
+        raise """
+          GraphQL query '#{key}':
+          '#{query}'
+          locale: '#{locale}'
+          params: #{inspect(params)}
+          error: #{inspect(error)}
+        """
+    end
   end
 
   def fetch_localized(key, locale, query, params \\ %{}) do
-    keyed = "query { #{key}(locale: $locale) #{query} }"
-    Neuron.query(keyed, with_locale(params, locale))
+    keyed = """
+      query FetchLocalized($locale: SiteLocale!) {
+        #{key}(locale: $locale) #{query}
+      }
+    """
+    with_locale = with_locale(params, locale)
+    Neuron.query(keyed, with_locale)
     |> handle_fetch_response(key)
   end
 
@@ -52,8 +74,16 @@ defmodule DatoCMS.GraphQLClient do
   end
 
   def fetch_all!(key, query, params \\ %{}) do
-    {:ok, pages} = fetch_all(key, query, params)
-    pages
+    case fetch_all(key, query, params) do
+      {:ok, pages} -> pages
+      {:error, error} ->
+        raise """
+          GraphQL query '#{key}':
+          '#{query}'
+          params: #{inspect(params)}
+          error: #{inspect(error)}
+        """
+    end
   end
 
   def fetch_all(key, query, params \\ %{}) do
@@ -66,13 +96,22 @@ defmodule DatoCMS.GraphQLClient do
   end
 
   def fetch_all_localized!(key, locale, query, params \\ %{}) do
-    {:ok, pages} = fetch_all_localized(key, locale, query, params)
-    pages
+    case fetch_all_localized(key, locale, query, params) do
+      {:ok, pages} -> pages
+      {:error, error} ->
+        raise """
+          GraphQL query '#{key}':
+          '#{query}'
+          locale: '#{locale}'
+          params: #{inspect(params)}
+          error: #{inspect(error)}
+        """
+    end
   end
 
   def fetch_all_localized(key, locale, query, params \\ %{}) do
     paginated = """
-      query paginated($first: IntType!, $skip: IntType!) {
+      query paginated($locale: SiteLocale!, $first: IntType!, $skip: IntType!) {
         #{key}(locale: $locale, first: $first, skip: $skip) #{query}
       }
     """
@@ -87,7 +126,12 @@ defmodule DatoCMS.GraphQLClient do
   end
 
   defp do_fetch_all(key, paginated, params) do
-    {:ok, response} = Neuron.query(paginated, params)
+    Neuron.query(paginated, params)
+    |> handle_fetch_all_query(key, paginated, params)
+  end
+
+  defp handle_fetch_all_query({:error, _errors} = response, _key, _paginated, _params), do: response
+  defp handle_fetch_all_query({:ok, response}, key, paginated, params) do
     handle_fetch_all_response(response.body, key, paginated, params)
   end
 
