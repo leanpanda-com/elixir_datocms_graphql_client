@@ -118,6 +118,9 @@ defmodule DatoCMS.GraphQLClient do
     do_fetch_all(key, paginated, with_locale(with_default_pagination(params), locale))
   end
 
+  defp handle_fetch_response({:error, %HTTPoison.Error{id: nil, reason: :nxdomain}}, _key) do
+    {:error, "Cannot resolve domain"}
+  end
   defp handle_fetch_response({:ok, %Neuron.Response{body: %{errors: errors}}}, _key) do
     {:error, errors}
   end
