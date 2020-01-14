@@ -1,8 +1,6 @@
 defmodule DatoCMS.GraphQLClient.MetaTagHelpers do
   def dato_meta_tags(%{_seoMetaTags: tags} = _item) do
-    foo = stringify_tags(tags)
-    IO.puts "foo: #{inspect(foo, [pretty: true, width: 0])}"
-    foo
+    stringify_tags(tags)
   end
 
   def seo_meta_tags_fragment do
@@ -15,7 +13,7 @@ defmodule DatoCMS.GraphQLClient.MetaTagHelpers do
     """
   end
 
-  def stringify_tags(tags) do
+  defp stringify_tags(tags) do
     Enum.map(tags, fn (tag) ->
       attributes = if tag[:attributes] do
           tag[:attributes]
