@@ -57,22 +57,6 @@ defmodule DatoCMS.GraphQLClient do
     |> handle_fetch_response(key)
   end
 
-  def responsiveImageFragment do
-    """
-    srcSet
-    webpSrcSet
-    sizes
-    src
-    width
-    height
-    aspectRatio
-    alt
-    title
-    bgColor
-    base64
-    """
-  end
-
   def fetch_all!(key, query, params \\ %{}) do
     case fetch_all(key, query, params) do
       {:ok, pages} -> pages
