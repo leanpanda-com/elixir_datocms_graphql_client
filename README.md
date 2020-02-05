@@ -1,21 +1,10 @@
-# FermoGraphql
+# DatoCMS GraphQL Client
 
-**TODO: Add description**
+# Initialization
 
-## Installation
+# Queries
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `fermo_graphql` to your list of dependencies in `mix.exs`:
-
-```elixir
-def deps do
-  [
-    {:fermo_graphql, "~> 0.1.0"}
-  ]
-end
-```
-
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/fermo_graphql](https://hexdocs.pm/fermo_graphql).
-
+* single items: `fetch!(:foo, "{ bar }").bar`,
+* localized single items: `fetch_localized!(:foo, :en, "{ bar }")`,
+* collections: `fetch_all!(:allFoos, "{ bar }")`,
+* localized collections: `fetch_all_localized!(:allFoos, :en, "{ bar }")`.
