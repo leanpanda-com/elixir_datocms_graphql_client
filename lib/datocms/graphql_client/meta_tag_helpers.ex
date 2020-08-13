@@ -3,6 +3,38 @@ defmodule DatoCMS.GraphQLClient.MetaTagHelpers do
     stringify_tags(tags)
   end
 
+  def dato_favicon_meta_tags(locale) do
+    site = DatoCMS.GraphQLClient.fetch_localized!(
+      :_site,
+      locale,
+      dato_favicon_meta_tags_query()
+    )
+    tags = site.icon ++ site.apple ++ site.ms
+    stringify_tags(tags)
+  end
+
+  defp dato_favicon_meta_tags_query do
+    """
+    {
+      icon: faviconMetaTags(variants: icon) {
+        attributes
+        content
+        tag
+      }
+      apple: faviconMetaTags(variants: appleTouchIcon) {
+        attributes
+        content
+        tag
+      }
+      ms: faviconMetaTags(variants: msApplication) {
+        attributes
+        content
+        tag
+      }
+    }
+    """
+  end
+
   def seo_meta_tags_fragment do
     """
     _seoMetaTags {
