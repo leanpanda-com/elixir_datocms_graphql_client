@@ -23,7 +23,7 @@ defmodule DatoCMS.GraphqlClient.MixProject do
     %{
       licenses: ["MIT"],
       links: %{
-        "GitLab" => "https://github.com/leanpanda-com/datocms_graphql_client"
+        "GitHub" => "https://github.com/leanpanda-com/datocms_graphql_client"
       },
       maintainers: ["Joe Yates"]
     }
