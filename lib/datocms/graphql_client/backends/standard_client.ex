@@ -35,24 +35,46 @@ defmodule DatoCMS.GraphQLClient.Backends.StandardClient do
     configuration()[:live]
   end
 
-  def fetch!(key, query, params \\ %{}) do
-    case fetch(key, query, params) do
+  def query(query, params \\ %{}) do
+    Neuron.query(query, params)
+    |> handle_response()
+  end
+
+  def query!(query, params \\ %{}) do
+    case query(query, params) do
       {:ok, page} -> page
       {:error, error} ->
         raise """
-          GraphQL query '#{key}':
-          '#{query}'
+          GraphQL query '#{query}':
           params: #{inspect(params)}
           error: #{inspect(error)}
         """
     end
   end
 
-  def fetch(key, query, params \\ %{}) do
-    keyed = "query { #{key} #{query} }"
-    Neuron.query(keyed, params)
-    |> handle_fetch_response(key)
+  def fetch!(key, query, params \\ %{}) do
+    case fetch(key, query, params) do
+      {:ok, page} -> page
+      {:error, error} ->
+        raise """
+          GraphQL query #{key} '#{query}':
+          params: #{inspect(params)}
+          error: #{inspect(error)}
+        """
+    end
   end
+
+  def fetch(key, query_body, params \\ %{}) do
+    keyed = fetch_query(key, query_body)
+    result = query(keyed, params)
+
+    case result do
+      {:ok, data} -> {:ok, data[key]}
+      other -> other
+    end
+  end
+
+  def fetch_query(key, query), do: "query { #{key} #{query} }"
 
   def fetch_localized!(key, locale, query, params \\ %{}) do
     case fetch_localized(key, locale, query, params) do
@@ -75,8 +97,14 @@ defmodule DatoCMS.GraphQLClient.Backends.StandardClient do
       }
     """
     with_locale = with_locale(params, locale)
-    Neuron.query(keyed, with_locale)
-    |> handle_fetch_response(key)
+
+    result = Neuron.query(keyed, with_locale)
+    |> handle_response()
+
+    case result do
+      {:ok, data} -> data[key]
+      other -> other
+    end
   end
 
   def fetch_all!(key, query, params \\ %{}) do
@@ -129,14 +157,17 @@ defmodule DatoCMS.GraphQLClient.Backends.StandardClient do
     |> handle_fetch_all_query(key, paginated, params)
   end
 
-  defp handle_fetch_response({:error, %HTTPoison.Error{id: nil, reason: :nxdomain}}, _key) do
+  defp handle_response({:error, %HTTPoison.Error{id: nil, reason: :nxdomain}}) do
     {:error, "Cannot resolve domain"}
   end
-  defp handle_fetch_response({:ok, %Neuron.Response{body: %{errors: errors}}}, _key) do
+  defp handle_response({:ok, %Neuron.Response{body: %{errors: errors}}}) do
     {:error, errors}
   end
-  defp handle_fetch_response({:ok, %Neuron.Response{body: %{data: data}}}, key) do
-    {:ok, data[key]}
+  defp handle_response({:ok, %Neuron.Response{body: %{data: data}}}) do
+    {:ok, data}
+  end
+  defp handle_response({:ok, %Neuron.Response{body: %{url: url}}}) do
+    {:ok, url}
   end
 
   defp handle_fetch_all_query({:error, _errors} = response, _key, _paginated, _params), do: response
