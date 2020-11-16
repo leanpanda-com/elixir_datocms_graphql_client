@@ -31,6 +31,10 @@ defmodule DatoCMS.GraphQLClient.Backends.StandardClient do
     Keyword.merge(defaults, options)
   end
 
+  def live? do
+    configuration()[:live]
+  end
+
   def fetch!(key, query, params \\ %{}) do
     case fetch(key, query, params) do
       {:ok, page} -> page
