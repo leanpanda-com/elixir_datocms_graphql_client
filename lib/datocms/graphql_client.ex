@@ -6,11 +6,12 @@ defmodule DatoCMS.GraphQLClient do
   alias DatoCMS.GraphQLClient.Backends.StandardClient
 
   def client do
-    Application.get_env(:datocms_graphql_client, :backend, StandardClient)
+    Application.get_env(:datocms_graphql_client, :config, [])
+    |> Keyword.get(:backend, StandardClient)
   end
 
-  def config(datocms_api_key) do
-    client().config(datocms_api_key)
+  def configure(opts) do
+    client().configure(opts)
   end
 
   def fetch!(key, query, params \\ %{}) do

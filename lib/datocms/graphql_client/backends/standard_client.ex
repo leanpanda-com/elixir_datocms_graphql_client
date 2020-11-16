@@ -3,14 +3,32 @@ defmodule DatoCMS.GraphQLClient.Backends.StandardClient do
   A basic client for DatoCMS GraphQL requests
   """
 
-  @datocms_graphql_endpoint "https://graphql.datocms.com/"
+  @endpoint "https://graphql.datocms.com/"
   @per_page 100
 
-  def config(datocms_api_key) do
-    Neuron.Config.set(url: @datocms_graphql_endpoint)
-    Neuron.Config.set(headers: [authorization: "Bearer #{datocms_api_key}"])
+  def configure(options \\ []) do
+    config = configuration(options)
+
+    if Keyword.has_key?(config, :endpoint) do
+      endpoint = config[:endpoint]
+      Neuron.Config.set(url: endpoint)
+    end
+
+    if Keyword.has_key?(config, :api_key) do
+      api_key = config[:api_key]
+      Neuron.Config.set(headers: [authorization: "Bearer #{api_key}"])
+    else
+      raise "Please set the `api_key` configuration option"
+    end
+
     Neuron.Config.set(connection_opts: [timeout: :infinity, recv_timeout: :infinity])
     Neuron.Config.set(parse_options: [keys: :atoms])
+  end
+
+  def configuration(options \\ []) do
+    config_defaults = Application.get_env(:datocms_graphql_client, :config, [])
+    defaults = Keyword.merge([endpoint: @endpoint], config_defaults)
+    Keyword.merge(defaults, options)
   end
 
   def fetch!(key, query, params \\ %{}) do

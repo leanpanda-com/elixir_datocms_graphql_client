@@ -2,8 +2,8 @@ defmodule DatoCMS.GraphQLClient.Backends.MemoizingClient do
   alias DatoCMS.GraphQLClient.Backends.StandardClient
   use Memoize
 
-  def config(datocms_api_key) do
-    StandardClient.config(datocms_api_key)
+  def configure(opts \\ []) do
+    StandardClient.configure(opts)
   end
 
   defmemo fetch!(key, query, params \\ %{}) do
