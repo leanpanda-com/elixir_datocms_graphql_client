@@ -1,0 +1,27 @@
+{
+  "value": {
+    "schema": "dast",
+    "document": {
+      "type": "root",
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "item": "15236536",
+              "type": "inlineItem"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "links": [
+    {
+      "__typename": "ItemRecord",
+      "id": "15236536",
+      "title": "The item title",
+      "body": "The body"
+    }
+  ]
+}

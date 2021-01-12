@@ -1,28 +1,36 @@
 defmodule DatoCMS.StructuredText do
-  def to_html(%{value: %{schema: "dast", document: document}}) do
-    render(document)
+  def to_html(%{value: %{schema: "dast", document: document}} = dast, options \\ %{}) do
+    render(document, dast, options)
     |> Enum.join("")
   end
 
-  defp render(%{type: "root"} = node) do
-    Enum.map(node.children, &render/1)
+  defp render(%{type: "root"} = node, dast, options) do
+    Enum.map(node.children, &(render(&1, dast, options)))
   end
 
-  defp render(%{type: "paragraph"} = node) do
-    ["<p>" | [Enum.map(node.children, &render/1) | ["</p>"]]]
+  defp render(%{type: "paragraph"} = node, dast, options) do
+    ["<p>" | [Enum.map(node.children, &(render(&1, dast, options))) | ["</p>"]]]
   end
 
-  defp render(%{type: "heading"} = node) do
+  defp render(%{type: "heading"} = node, dast, options) do
     tag = "h#{node.level}"
-    ["<#{tag}>" | [Enum.map(node.children, &render/1) | ["</#{tag}>"]]]
+    ["<#{tag}>" | [Enum.map(node.children, &(render(&1, dast, options))) | ["</#{tag}>"]]]
   end
 
-  defp render(%{type: "link"} = node) do
-    [~s(<a href="#{node.url}">) | [Enum.map(node.children, &render/1) | ["</a>"]]]
+  defp render(%{type: "link"} = node, dast, options) do
+    [~s(<a href="#{node.url}">) | [Enum.map(node.children, &(render(&1, dast, options))) | ["</a>"]]]
   end
 
-  defp render(%{type: "span"} = node) do
+  defp render(%{type: "span"} = node, _dast, _options) do
     [render_span(node)]
+  end
+
+  defp render(
+    %{type: "inlineItem"} = node,
+    dast,
+    %{renderers: %{renderInlineRecord: renderInlineRecord}} = options
+  ) do
+    renderInlineRecord.(node, dast, options)
   end
 
   defp render_span(%{marks: ["highlight" | marks]} = span) do

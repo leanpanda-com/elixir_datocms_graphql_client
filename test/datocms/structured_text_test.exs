@@ -2,7 +2,19 @@ defmodule DatoCMS.StructuredTextTest do
   use ExUnit.Case, async: true
   import DatoCMS.Test.Support.FixtureHelper, only: [json_fixture!: 1]
 
-  import DatoCMS.StructuredText, only: [to_html: 1]
+  import DatoCMS.StructuredText, only: [
+    to_html: 1,
+    to_html: 2
+  ]
+
+  def renderInlineRecord(%{type: "inlineItem", item: id}, dast, _options) do
+    node = Enum.find(dast.links, &(&1.id == id))
+    renderRecord(node)
+  end
+
+  def renderRecord(%{__typename: "ItemRecord"} = node) do
+    "<h1>#{node.title}</h1><p>#{node.body}</p>"
+  end
 
   @tag structured_text: json_fixture!("minimal-text")
   test "simple text", context do
@@ -33,6 +45,22 @@ defmodule DatoCMS.StructuredTextTest do
       "<a href=\"https://example.com\">here</a>." <>
       "</p>"
     assert(result == expected)
+  end
+
+  @tag structured_text: json_fixture!("inline-item")
+  test "inlineItem", context do
+    options = %{renderers: %{renderInlineRecord: &renderInlineRecord/3}}
+    result = to_html(context.structured_text, options)
+
+    expected = "<p><h1>The item title</h1><p>The body</p></p>"
+    assert(result == expected)
+  end
+
+  @tag structured_text: json_fixture!("inline-item")
+  test "inlineItem without renderInlineRecord", context do
+    assert_raise FunctionClauseError, fn ->
+      to_html(context.structured_text)
+    end
   end
 
   @tag structured_text: "Wrong!"
