@@ -13,7 +13,7 @@ defmodule DatoCMS.StructuredText do
   end
 
   defp render(%{type: "span"} = node) do
-    ["<span>" | [node.value | ["</span>"]]]
+    [node.value]
   end
 
   defp render(%{type: "heading"} = node) do
