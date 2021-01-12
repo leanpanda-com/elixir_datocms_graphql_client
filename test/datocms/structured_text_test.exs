@@ -7,12 +7,7 @@ defmodule DatoCMS.StructuredTextTest do
     to_html: 2
   ]
 
-  def renderInlineRecord(%{type: "inlineItem", item: id}, dast, _options) do
-    node = Enum.find(dast.links, &(&1.id == id))
-    renderRecord(node)
-  end
-
-  def renderRecord(%{__typename: "ItemRecord"} = node) do
+  def renderInlineRecord(%{__typename: "ItemRecord"} = node) do
     "<h1>#{node.title}</h1><p>#{node.body}</p>"
   end
 
