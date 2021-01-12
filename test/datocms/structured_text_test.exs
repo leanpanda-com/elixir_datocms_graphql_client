@@ -19,6 +19,7 @@ defmodule DatoCMS.StructuredTextTest do
   @tag structured_text: json_fixture!("minimal-text")
   test "simple text", context do
     result = to_html(context.structured_text)
+
     expected = "<p>Hi There</p>"
     assert(result == expected)
   end
@@ -26,6 +27,7 @@ defmodule DatoCMS.StructuredTextTest do
   @tag structured_text: json_fixture!("headings")
   test "headings", context do
     result = to_html(context.structured_text)
+
     expected = "<h1>The Title!!!</h1>"
     assert(result == expected)
   end
@@ -33,6 +35,7 @@ defmodule DatoCMS.StructuredTextTest do
   @tag structured_text: json_fixture!("text-styles")
   test "text styles", context do
     result = to_html(context.structured_text)
+
     expected =
       "<p>" <>
       "<strong><span class=\"highlight\">Some</span></strong> " <>
