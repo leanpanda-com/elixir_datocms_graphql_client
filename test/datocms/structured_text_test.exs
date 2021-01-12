@@ -7,8 +7,12 @@ defmodule DatoCMS.StructuredTextTest do
     to_html: 2
   ]
 
-  def renderInlineRecord(%{__typename: "ItemRecord"} = node) do
-    "<h1>#{node.title}</h1><p>#{node.body}</p>"
+  def renderInlineRecord(%{__typename: "ItemRecord"} = item) do
+    "<h1>#{item.title}</h1><p>#{item.body}</p>"
+  end
+
+  def renderLinkToRecord(%{__typename: "ItemRecord"} = item, node) do
+    ~s(<a href="/items/#{item.id}">#{hd(node.children).value}</a>)
   end
 
   @tag structured_text: json_fixture!("minimal-text")
@@ -47,7 +51,7 @@ defmodule DatoCMS.StructuredTextTest do
 
   @tag structured_text: json_fixture!("inline-item")
   test "inlineItem", context do
-    options = %{renderers: %{renderInlineRecord: &renderInlineRecord/3}}
+    options = %{renderers: %{renderInlineRecord: &renderInlineRecord/1}}
     result = to_html(context.structured_text, options)
 
     expected = "<p><h1>The item title</h1><p>The body</p></p>"
@@ -56,6 +60,22 @@ defmodule DatoCMS.StructuredTextTest do
 
   @tag structured_text: json_fixture!("inline-item")
   test "inlineItem without renderInlineRecord", context do
+    assert_raise FunctionClauseError, fn ->
+      to_html(context.structured_text)
+    end
+  end
+
+  @tag structured_text: json_fixture!("item-link")
+  test "itemLink", context do
+    options = %{renderers: %{renderLinkToRecord: &renderLinkToRecord/2}}
+    result = to_html(context.structured_text, options)
+
+    expected = "<p>A <a href=\"/items/15236536\">link</a> to an item.</p>"
+    assert(result == expected)
+  end
+
+  @tag structured_text: json_fixture!("item-link")
+  test "itemLink without renderLinkToRecord", context do
     assert_raise FunctionClauseError, fn ->
       to_html(context.structured_text)
     end

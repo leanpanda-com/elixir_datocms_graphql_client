@@ -28,10 +28,19 @@ defmodule DatoCMS.StructuredText do
   defp render(
     %{type: "inlineItem"} = node,
     dast,
-    %{renderers: %{renderInlineRecord: renderInlineRecord}} = options
+    %{renderers: %{renderInlineRecord: renderInlineRecord}}
   ) do
-    node = Enum.find(dast.links, &(&1.id == node.item))
-    renderInlineRecord.(node)
+    item = Enum.find(dast.links, &(&1.id == node.item))
+    renderInlineRecord.(item)
+  end
+
+  defp render(
+    %{type: "itemLink"} = node,
+    dast,
+    %{renderers: %{renderLinkToRecord: renderLinkToRecord}}
+  ) do
+    item = Enum.find(dast.links, &(&1.id == node.item))
+    renderLinkToRecord.(item, node)
   end
 
   defp render_span(%{marks: ["highlight" | marks]} = span) do
