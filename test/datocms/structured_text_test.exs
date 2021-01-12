@@ -25,6 +25,10 @@ defmodule DatoCMS.StructuredTextTest do
     ["<div>" | [Enum.map(node.children, &(render(&1, dast, options))) | ["</div>"]]]
   end
 
+  def renderCustomLink(node, dast, options) do
+    [~s(<a href="#{node.url}" class="button">) | [Enum.map(node.children, &(render(&1, dast, options))) | ["</a>"]]]
+  end
+
   @tag structured_text: json_fixture!("minimal-text")
   test "minimal text", context do
     result = to_html(context.structured_text)
@@ -64,6 +68,15 @@ defmodule DatoCMS.StructuredTextTest do
     result = to_html(context.structured_text)
 
     expected = "<p><a href=\"https://example.com\">Link</a></p>"
+    assert(result == expected)
+  end
+
+  @tag structured_text: json_fixture!("links")
+  test "custom link renderer", context do
+    options = %{renderers: %{renderLink: &renderCustomLink/3}}
+    result = to_html(context.structured_text, options)
+
+    expected = ~s(<p><a href="https://example.com" class="button">Link</a></p>)
     assert(result == expected)
   end
 

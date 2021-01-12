@@ -31,6 +31,13 @@ defmodule DatoCMS.StructuredText do
     ["<#{tag}>" | [Enum.map(node.children, &(render(&1, dast, options))) | ["</#{tag}>"]]]
   end
 
+  def render(
+    %{type: "link"} = node,
+    dast,
+    %{renderers: %{renderLink: renderLink}} = options
+  ) do
+    renderLink.(node, dast, options)
+  end
   def render(%{type: "link"} = node, dast, options) do
     [~s(<a href="#{node.url}">) | [Enum.map(node.children, &(render(&1, dast, options))) | ["</a>"]]]
   end
