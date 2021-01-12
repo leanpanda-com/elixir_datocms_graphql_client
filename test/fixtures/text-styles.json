@@ -72,21 +72,7 @@
             },
             {
               "type": "span",
-              "value": " things. See "
-            },
-            {
-              "url": "https://example.com",
-              "type": "link",
-              "children": [
-                {
-                  "type": "span",
-                  "value": "here"
-                }
-              ]
-            },
-            {
-              "type": "span",
-              "value": "."
+              "value": " things."
             }
           ]
         }

@@ -1,0 +1,25 @@
+{
+  "value": {
+    "schema": "dast",
+    "document": {
+      "type": "root",
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "url": "https://example.com",
+              "type": "link",
+              "children": [
+                {
+                  "type": "span",
+                  "value": "Link"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

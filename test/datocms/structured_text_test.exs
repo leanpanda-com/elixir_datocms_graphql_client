@@ -59,6 +59,14 @@ defmodule DatoCMS.StructuredTextTest do
     assert(result == expected)
   end
 
+  @tag structured_text: json_fixture!("links")
+  test "links", context do
+    result = to_html(context.structured_text)
+
+    expected = "<p><a href=\"https://example.com\">Link</a></p>"
+    assert(result == expected)
+  end
+
   @tag structured_text: json_fixture!("text-styles")
   test "text styles", context do
     result = to_html(context.structured_text)
@@ -71,8 +79,7 @@ defmodule DatoCMS.StructuredTextTest do
       "<span class=\"highlight\">including</span> " <>
       "<code>integers</code>, " <>
       "<del>cancelled words</del>, and " <>
-      "<u>underlined</u> things. See " <>
-      "<a href=\"https://example.com\">here</a>." <>
+      "<u>underlined</u> things." <>
       "</p>"
     assert(result == expected)
   end
