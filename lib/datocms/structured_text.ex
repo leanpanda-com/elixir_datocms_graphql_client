@@ -8,6 +8,13 @@ defmodule DatoCMS.StructuredText do
     Enum.map(node.children, &(render(&1, dast, options)))
   end
 
+  def render(
+    %{type: "paragraph"} = node,
+    dast,
+    %{renderers: %{renderParagraph: renderParagraph}} = options
+  ) do
+    renderParagraph.(node, dast, options)
+  end
   def render(%{type: "paragraph"} = node, dast, options) do
     ["<p>" | [Enum.map(node.children, &(render(&1, dast, options))) | ["</p>"]]]
   end

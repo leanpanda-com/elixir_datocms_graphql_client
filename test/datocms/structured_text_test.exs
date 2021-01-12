@@ -21,11 +21,24 @@ defmodule DatoCMS.StructuredTextTest do
     ["<#{tag}>" | [Enum.map(node.children, &(render(&1, dast, options))) | ["</#{tag}>"]]]
   end
 
+  def renderCustomParagraph(node, dast, options) do
+    ["<div>" | [Enum.map(node.children, &(render(&1, dast, options))) | ["</div>"]]]
+  end
+
   @tag structured_text: json_fixture!("minimal-text")
-  test "simple text", context do
+  test "minimal text", context do
     result = to_html(context.structured_text)
 
     expected = "<p>Hi There</p>"
+    assert(result == expected)
+  end
+
+  @tag structured_text: json_fixture!("minimal-text")
+  test "custom paragraph renderer", context do
+    options = %{renderers: %{renderParagraph: &renderCustomParagraph/3}}
+    result = to_html(context.structured_text, options)
+
+    expected = "<div>Hi There</div>"
     assert(result == expected)
   end
 
