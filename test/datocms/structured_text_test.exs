@@ -5,7 +5,8 @@ defmodule DatoCMS.StructuredTextTest do
   import DatoCMS.StructuredText, only: [
     to_html: 1,
     to_html: 2,
-    render: 3
+    render: 3,
+    render_span: 3
   ]
 
   def renderInlineRecord(%{__typename: "ItemRecord"} = item) do
@@ -27,6 +28,11 @@ defmodule DatoCMS.StructuredTextTest do
 
   def renderCustomLink(node, dast, options) do
     [~s(<a href="#{node.url}" class="button">) | [Enum.map(node.children, &(render(&1, dast, options))) | ["</a>"]]]
+  end
+
+  def render_custom_highlights(%{marks: ["highlight" | marks]} = span, dast, options) do
+    simplified = Map.put(span, :marks, marks)
+    ~s(<span class="bright>) <> render_span(simplified, dast, options) <> "</span>"
   end
 
   @tag structured_text: json_fixture!("minimal-text")
@@ -95,6 +101,15 @@ defmodule DatoCMS.StructuredTextTest do
       "<u>underlined</u> things." <>
       "</p>"
     assert(result == expected)
+  end
+
+  @tag structured_text: json_fixture!("text-styles")
+  test "custom highlights", context do
+    options = %{renderers: %{render_highlight: &render_custom_highlights/3}}
+    result = to_html(context.structured_text, options)
+
+    expected = ~s(<span class="bright>Some</span>)
+    assert(String.contains?(result, expected))
   end
 
   @tag structured_text: json_fixture!("inline-item")
