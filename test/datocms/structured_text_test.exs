@@ -4,7 +4,8 @@ defmodule DatoCMS.StructuredTextTest do
 
   import DatoCMS.StructuredText, only: [
     to_html: 1,
-    to_html: 2
+    to_html: 2,
+    render: 3
   ]
 
   def renderInlineRecord(%{__typename: "ItemRecord"} = item) do
@@ -13,6 +14,11 @@ defmodule DatoCMS.StructuredTextTest do
 
   def renderLinkToRecord(%{__typename: "ItemRecord"} = item, node) do
     ~s(<a href="/items/#{item.id}">#{hd(node.children).value}</a>)
+  end
+
+  def renderHeading(node, dast, options) do
+    tag = "h#{node.level + 1}"
+    ["<#{tag}>" | [Enum.map(node.children, &(render(&1, dast, options))) | ["</#{tag}>"]]]
   end
 
   @tag structured_text: json_fixture!("minimal-text")
@@ -79,6 +85,15 @@ defmodule DatoCMS.StructuredTextTest do
     assert_raise FunctionClauseError, fn ->
       to_html(context.structured_text)
     end
+  end
+
+  @tag structured_text: json_fixture!("headings")
+  test "custom renderers", context do
+    options = %{renderers: %{renderHeading: &renderHeading/3}}
+    result = to_html(context.structured_text, options)
+
+    expected = "<h2>The Title!!!</h2>"
+    assert(result == expected)
   end
 
   @tag structured_text: "Wrong!"
