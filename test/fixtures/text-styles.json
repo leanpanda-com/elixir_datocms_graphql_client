@@ -1,0 +1,96 @@
+{
+  "value": {
+    "schema": "dast",
+    "document": {
+      "type": "root",
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "span",
+              "marks": [
+                "strong",
+                "highlight"
+              ],
+              "value": "Some"
+            },
+            {
+              "type": "span",
+              "value": " styled "
+            },
+            {
+              "type": "span",
+              "marks": [
+                "emphasis"
+              ],
+              "value": "text"
+            },
+            {
+              "type": "span",
+              "value": " "
+            },
+            {
+              "type": "span",
+              "marks": [
+                "highlight"
+              ],
+              "value": "including"
+            },
+            {
+              "type": "span",
+              "value": " "
+            },
+            {
+              "type": "span",
+              "marks": [
+                "code"
+              ],
+              "value": "integers"
+            },
+            {
+              "type": "span",
+              "value": ", "
+            },
+            {
+              "type": "span",
+              "marks": [
+                "strikethrough"
+              ],
+              "value": "cancelled words"
+            },
+            {
+              "type": "span",
+              "value": ", and "
+            },
+            {
+              "type": "span",
+              "marks": [
+                "underline"
+              ],
+              "value": "underlined"
+            },
+            {
+              "type": "span",
+              "value": " things. See "
+            },
+            {
+              "url": "https://example.com",
+              "type": "link",
+              "children": [
+                {
+                  "type": "span",
+                  "value": "here"
+                }
+              ]
+            },
+            {
+              "type": "span",
+              "value": "."
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

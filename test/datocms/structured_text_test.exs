@@ -18,6 +18,23 @@ defmodule DatoCMS.StructuredTextTest do
     assert(result == expected)
   end
 
+  @tag structured_text: json_fixture!("text-styles")
+  test "text styles", context do
+    result = to_html(context.structured_text)
+    expected =
+      "<p>" <>
+      "<strong><span class=\"highlight\">Some</span></strong> " <>
+      "styled " <>
+      "<em>text</em> " <>
+      "<span class=\"highlight\">including</span> " <>
+      "<code>integers</code>, " <>
+      "<del>cancelled words</del>, and " <>
+      "<u>underlined</u> things. See " <>
+      "<a href=\"https://example.com\">here</a>." <>
+      "</p>"
+    assert(result == expected)
+  end
+
   @tag structured_text: "Wrong!"
   test "the wrong structure", context do
     assert_raise FunctionClauseError, fn ->
