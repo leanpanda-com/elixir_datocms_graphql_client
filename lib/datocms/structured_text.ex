@@ -15,4 +15,9 @@ defmodule DatoCMS.StructuredText do
   defp render(%{type: "span"} = node) do
     ["<span>" | [node.value | ["</span>"]]]
   end
+
+  defp render(%{type: "heading"} = node) do
+    tag = "h#{node.level}"
+    ["<#{tag}>" | [Enum.map(node.children, &render/1) | ["</#{tag}>"]]]
+  end
 end
