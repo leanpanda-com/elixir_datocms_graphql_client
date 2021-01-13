@@ -42,10 +42,6 @@ defmodule DatoCMS.StructuredText do
     [~s(<a href="#{node.url}">) | [Enum.map(node.children, &(render(&1, dast, options))) | ["</a>"]]]
   end
 
-  def render(%{type: "span"} = node, dast, options) do
-    [render_span(node, dast, options)]
-  end
-
   def render(
     %{type: "inlineItem"} = node,
     dast,
@@ -64,16 +60,17 @@ defmodule DatoCMS.StructuredText do
     render_link_to_record.(item, node)
   end
 
-  def render_span(
-    %{marks: ["highlight" | _marks]} = span,
+  def render(
+    %{type: "span", marks: ["highlight" | _marks]} = node,
     dast,
     %{renderers: %{render_highlight: render_highlight}} = options
   ) do
-    render_highlight.(span, dast, options)
+    render_highlight.(node, dast, options)
   end
-  def render_span(%{marks: ["highlight" | marks]} = span, dast, options) do
-    simplified = Map.put(span, :marks, marks)
-    ~s(<span class="highlight">) <> render_span(simplified, dast, options) <> "</span>"
+
+  def render(%{type: "span", marks: ["highlight" | marks]} = node, dast, options) do
+    simplified = Map.put(node, :marks, marks)
+    ~s(<span class="highlight">) <> render(simplified, dast, options) <> "</span>"
   end
 
   @mark_nodes %{
@@ -84,17 +81,17 @@ defmodule DatoCMS.StructuredText do
     "underline" => "u"
   }
 
-  def render_span(%{marks: [mark | marks]} = span, dast, options) do
-    simplified = Map.put(span, :marks, marks)
+  def render(%{type: "span", marks: [mark | marks]} = node, dast, options) do
+    simplified = Map.put(node, :marks, marks)
     node = @mark_nodes[mark]
-    "<#{node}>" <> render_span(simplified, dast, options) <> "</#{node}>"
+    "<#{node}>" <> render(simplified, dast, options) <> "</#{node}>"
   end
 
-  def render_span(%{marks: []} = span, _dast, _options) do
-    span.value
+  def render(%{type: "span", marks: []} = node, _dast, _options) do
+    node.value
   end
 
-  def render_span(span, _dast, _options) do
-    span.value
+  def render(%{type: "span"} = node, _dast, _options) do
+    node.value
   end
 end

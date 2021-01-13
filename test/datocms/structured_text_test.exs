@@ -5,8 +5,7 @@ defmodule DatoCMS.StructuredTextTest do
   import DatoCMS.StructuredText, only: [
     to_html: 1,
     to_html: 2,
-    render: 3,
-    render_span: 3
+    render: 3
   ]
 
   def render_inline_record(%{__typename: "ItemRecord"} = item) do
@@ -32,7 +31,7 @@ defmodule DatoCMS.StructuredTextTest do
 
   def render_custom_highlights(%{marks: ["highlight" | marks]} = span, dast, options) do
     simplified = Map.put(span, :marks, marks)
-    ~s(<span class="bright>) <> render_span(simplified, dast, options) <> "</span>"
+    ~s(<span class="bright>) <> render(simplified, dast, options) <> "</span>"
   end
 
   @tag structured_text: json_fixture!("minimal-text")
