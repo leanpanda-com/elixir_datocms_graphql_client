@@ -11,9 +11,9 @@ defmodule DatoCMS.StructuredText do
   def render(
     %{type: "paragraph"} = node,
     dast,
-    %{renderers: %{renderParagraph: renderParagraph}} = options
+    %{renderers: %{render_paragraph: render_paragraph}} = options
   ) do
-    renderParagraph.(node, dast, options)
+    render_paragraph.(node, dast, options)
   end
   def render(%{type: "paragraph"} = node, dast, options) do
     ["<p>" | [Enum.map(node.children, &(render(&1, dast, options))) | ["</p>"]]]
@@ -22,9 +22,9 @@ defmodule DatoCMS.StructuredText do
   def render(
     %{type: "heading"} = node,
     dast,
-    %{renderers: %{renderHeading: renderHeading}} = options
+    %{renderers: %{render_heading: render_heading}} = options
   ) do
-    renderHeading.(node, dast, options)
+    render_heading.(node, dast, options)
   end
   def render(%{type: "heading"} = node, dast, options) do
     tag = "h#{node.level}"
@@ -34,9 +34,9 @@ defmodule DatoCMS.StructuredText do
   def render(
     %{type: "link"} = node,
     dast,
-    %{renderers: %{renderLink: renderLink}} = options
+    %{renderers: %{render_link: render_link}} = options
   ) do
-    renderLink.(node, dast, options)
+    render_link.(node, dast, options)
   end
   def render(%{type: "link"} = node, dast, options) do
     [~s(<a href="#{node.url}">) | [Enum.map(node.children, &(render(&1, dast, options))) | ["</a>"]]]
@@ -49,19 +49,19 @@ defmodule DatoCMS.StructuredText do
   def render(
     %{type: "inlineItem"} = node,
     dast,
-    %{renderers: %{renderInlineRecord: renderInlineRecord}}
+    %{renderers: %{render_inline_record: render_inline_record}}
   ) do
     item = Enum.find(dast.links, &(&1.id == node.item))
-    renderInlineRecord.(item)
+    render_inline_record.(item)
   end
 
   def render(
     %{type: "itemLink"} = node,
     dast,
-    %{renderers: %{renderLinkToRecord: renderLinkToRecord}}
+    %{renderers: %{render_link_to_record: render_link_to_record}}
   ) do
     item = Enum.find(dast.links, &(&1.id == node.item))
-    renderLinkToRecord.(item, node)
+    render_link_to_record.(item, node)
   end
 
   def render_span(
