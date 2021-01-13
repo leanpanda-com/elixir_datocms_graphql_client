@@ -1,0 +1,41 @@
+{
+  "value": {
+    "schema": "dast",
+    "document": {
+      "type": "root",
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "span",
+              "value": "A "
+            },
+            {
+              "item": "15236536",
+              "type": "itemLink",
+              "children": [
+                {
+                  "type": "span",
+                  "value": "link"
+                }
+              ]
+            },
+            {
+              "type": "span",
+              "value": " to an item."
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "links": [
+    {
+      "__typename": "ItemRecord",
+      "id": "15236536",
+      "title": "The item title",
+      "body": "The item body"
+    }
+  ]
+}
