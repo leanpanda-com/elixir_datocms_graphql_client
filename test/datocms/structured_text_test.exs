@@ -3,48 +3,64 @@ defmodule DatoCMS.StructuredTextTest.CustomRenderers do
 
   def render_custom_heading(node, dast, options) do
     tag = "h#{node.level + 1}"
-    ["<#{tag}>" | [Enum.map(node.children, &(render(&1, dast, options))) | ["</#{tag}>"]]]
+    ["<#{tag}>"] ++
+      Enum.map(node.children, &(render(&1, dast, options))) ++
+      ["</#{tag}>"]
   end
 
   def render_custom_paragraph(node, dast, options) do
-    ["<div>" | [Enum.map(node.children, &(render(&1, dast, options))) | ["</div>"]]]
+    ["<div>"] ++
+      Enum.map(node.children, &(render(&1, dast, options))) ++
+      ["</div>"]
   end
 
   def render_custom_link(node, dast, options) do
-    [~s(<a href="#{node.url}" class="button">) | [Enum.map(node.children, &(render(&1, dast, options))) | ["</a>"]]]
+    [~s(<a href="#{node.url}" class="button">)] ++
+      Enum.map(node.children, &(render(&1, dast, options))) ++
+      ["</a>"]
   end
 
   def render_custom_highlights(%{marks: ["highlight" | marks]} = span, dast, options) do
     simplified = Map.put(span, :marks, marks)
-    ~s(<span class="bright">) <> render(simplified, dast, options) <> "</span>"
+    [~s(<span class="bright">)] ++
+      render(simplified, dast, options) ++
+      ["</span>"]
   end
 
   def render_custom_code(%{marks: ["code" | marks]} = span, dast, options) do
     simplified = Map.put(span, :marks, marks)
-    ~s(<span class="code">) <> render(simplified, dast, options) <> "</span>"
+    [~s(<span class="code">)] ++
+      render(simplified, dast, options) ++
+      ["</span>"]
   end
 
   def render_custom_emphasis(%{marks: ["emphasis" | marks]} = span, dast, options) do
     simplified = Map.put(span, :marks, marks)
-    ~s(<span class="emphasis">) <> render(simplified, dast, options) <> "</span>"
+    [~s(<span class="emphasis">)] ++
+      render(simplified, dast, options) ++
+      ["</span>"]
   end
 
   def render_custom_strikethrough(%{marks: ["strikethrough" | marks]} = span, dast, options) do
     simplified = Map.put(span, :marks, marks)
-    ~s(<span class="strikethrough">) <> render(simplified, dast, options) <> "</span>"
+    [~s(<span class="strikethrough">)] ++
+      render(simplified, dast, options) ++
+      ["</span>"]
   end
 
   def render_custom_underline(%{marks: ["underline" | marks]} = span, dast, options) do
     simplified = Map.put(span, :marks, marks)
-    ~s(<span class="underline">) <> render(simplified, dast, options) <> "</span>"
+    [~s(<span class="underline">)] ++
+      render(simplified, dast, options) ++
+      ["</span>"]
   end
 
   def render_inline_record(%{__typename: "ItemRecord"} = item) do
-    "<h1>#{item.title}</h1><p>#{item.body}</p>"
+    ["<h1>#{item.title}</h1><p>#{item.body}</p>"]
   end
 
   def render_link_to_record(%{__typename: "ItemRecord"} = item, node) do
-    ~s(<a href="/items/#{item.id}">#{hd(node.children).value}</a>)
+    [~s(<a href="/items/#{item.id}">#{hd(node.children).value}</a>)]
   end
 end
 

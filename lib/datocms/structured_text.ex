@@ -7,13 +7,15 @@ defmodule DatoCMS.StructuredText do
     "underline" => "u"
   }
 
-  def to_html(%{value: %{schema: "dast", document: document}} = dast, options \\ %{}) do
+  def to_html(
+    %{value: %{schema: "dast", document: document}} = dast, options \\ %{}
+  ) do
     render(document, dast, options)
     |> Enum.join("")
   end
 
   def render(%{type: "root"} = node, dast, options) do
-    Enum.map(node.children, &(render(&1, dast, options)))
+    Enum.flat_map(node.children, &(render(&1, dast, options)))
   end
 
   def render(%{type: "paragraph"} = node, dast, options) do
@@ -21,7 +23,8 @@ defmodule DatoCMS.StructuredText do
     if renderers[:render_paragraph] do
       renderers[:render_paragraph].(node, dast, options)
     else
-      ["<p>" | [Enum.map(node.children, &(render(&1, dast, options))) | ["</p>"]]]
+      inner = Enum.flat_map(node.children, &(render(&1, dast, options)))
+      ["<p>"] ++ inner ++ ["</p>"]
     end
   end
 
@@ -31,7 +34,8 @@ defmodule DatoCMS.StructuredText do
       renderers[:render_heading].(node, dast, options)
     else
       tag = "h#{node.level}"
-      ["<#{tag}>" | [Enum.map(node.children, &(render(&1, dast, options))) | ["</#{tag}>"]]]
+      inner = Enum.flat_map(node.children, &(render(&1, dast, options)))
+      ["<#{tag}>"] ++ inner ++ ["</#{tag}>"]
     end
   end
 
@@ -40,7 +44,8 @@ defmodule DatoCMS.StructuredText do
     if renderers[:render_link] do
       renderers[:render_link].(node, dast, options)
     else
-      [~s(<a href="#{node.url}">) | [Enum.map(node.children, &(render(&1, dast, options))) | ["</a>"]]]
+      inner = Enum.flat_map(node.children, &(render(&1, dast, options)))
+      [~s(<a href="#{node.url}">)] ++ inner ++ ["</a>"]
     end
   end
 
@@ -50,7 +55,8 @@ defmodule DatoCMS.StructuredText do
       renderers[:render_highlight].(node, dast, options)
     else
       simplified = Map.put(node, :marks, marks)
-      ~s(<span class="highlight">) <> render(simplified, dast, options) <> "</span>"
+      inner = render(simplified, dast, options)
+      [~s(<span class="highlight">)] ++ inner ++ ["</span>"]
     end
   end
 
@@ -61,15 +67,18 @@ defmodule DatoCMS.StructuredText do
       renderers[renderer_key].(node, dast, options)
     else
       simplified = Map.put(node, :marks, marks)
+      inner = render(simplified, dast, options)
       node = @mark_nodes[mark]
-      "<#{node}>" <> render(simplified, dast, options) <> "</#{node}>"
+      ["<#{node}>"] ++ inner ++ ["</#{node}>"]
     end
   end
 
   def render(%{type: "span"} = node, _dast, _options) do
-    node.value
+    [node.value]
   end
 
+  # "inlineItem" will always raise if no `render_inline_record`
+  # has been provided.
   def render(
     %{type: "inlineItem"} = node,
     dast,
@@ -79,6 +88,8 @@ defmodule DatoCMS.StructuredText do
     render_inline_record.(item)
   end
 
+  # "itemLink" will always raise if no `render_link_to_record`
+  # has been provided.
   def render(
     %{type: "itemLink"} = node,
     dast,
