@@ -16,7 +16,27 @@ defmodule DatoCMS.StructuredTextTest.CustomRenderers do
 
   def render_custom_highlights(%{marks: ["highlight" | marks]} = span, dast, options) do
     simplified = Map.put(span, :marks, marks)
-    ~s(<span class="bright>) <> render(simplified, dast, options) <> "</span>"
+    ~s(<span class="bright">) <> render(simplified, dast, options) <> "</span>"
+  end
+
+  def render_custom_code(%{marks: ["code" | marks]} = span, dast, options) do
+    simplified = Map.put(span, :marks, marks)
+    ~s(<span class="code">) <> render(simplified, dast, options) <> "</span>"
+  end
+
+  def render_custom_emphasis(%{marks: ["emphasis" | marks]} = span, dast, options) do
+    simplified = Map.put(span, :marks, marks)
+    ~s(<span class="emphasis">) <> render(simplified, dast, options) <> "</span>"
+  end
+
+  def render_custom_strikethrough(%{marks: ["strikethrough" | marks]} = span, dast, options) do
+    simplified = Map.put(span, :marks, marks)
+    ~s(<span class="strikethrough">) <> render(simplified, dast, options) <> "</span>"
+  end
+
+  def render_custom_underline(%{marks: ["underline" | marks]} = span, dast, options) do
+    simplified = Map.put(span, :marks, marks)
+    ~s(<span class="underline">) <> render(simplified, dast, options) <> "</span>"
   end
 
   def render_inline_record(%{__typename: "ItemRecord"} = item) do
@@ -111,7 +131,43 @@ defmodule DatoCMS.StructuredTextTest do
     options = %{renderers: %{render_highlight: &render_custom_highlights/3}}
     result = to_html(context.structured_text, options)
 
-    expected = ~s(<span class="bright>Some</span>)
+    expected = ~s(<span class="bright">Some</span>)
+    assert(String.contains?(result, expected))
+  end
+
+  @tag structured_text: json_fixture!("text-styles")
+  test "custom code", context do
+    options = %{renderers: %{render_code: &render_custom_code/3}}
+    result = to_html(context.structured_text, options)
+
+    expected = ~s(<span class="code">integers</span>)
+    assert(String.contains?(result, expected))
+  end
+
+  @tag structured_text: json_fixture!("text-styles")
+  test "custom emphasis", context do
+    options = %{renderers: %{render_emphasis: &render_custom_emphasis/3}}
+    result = to_html(context.structured_text, options)
+
+    expected = ~s(<span class="emphasis">text</span>)
+    assert(String.contains?(result, expected))
+  end
+
+  @tag structured_text: json_fixture!("text-styles")
+  test "custom strikethrough", context do
+    options = %{renderers: %{render_strikethrough: &render_custom_strikethrough/3}}
+    result = to_html(context.structured_text, options)
+
+    expected = ~s(<span class="strikethrough">cancelled words</span>)
+    assert(String.contains?(result, expected))
+  end
+
+  @tag structured_text: json_fixture!("text-styles")
+  test "custom underline", context do
+    options = %{renderers: %{render_underline: &render_custom_underline/3}}
+    result = to_html(context.structured_text, options)
+
+    expected = ~s(<span class="underline">underlined</span>)
     assert(String.contains?(result, expected))
   end
 

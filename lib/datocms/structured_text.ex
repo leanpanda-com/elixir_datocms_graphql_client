@@ -16,38 +16,32 @@ defmodule DatoCMS.StructuredText do
     Enum.map(node.children, &(render(&1, dast, options)))
   end
 
-  def render(
-    %{type: "paragraph"} = node,
-    dast,
-    %{renderers: %{render_paragraph: render_paragraph}} = options
-  ) do
-    render_paragraph.(node, dast, options)
-  end
   def render(%{type: "paragraph"} = node, dast, options) do
-    ["<p>" | [Enum.map(node.children, &(render(&1, dast, options))) | ["</p>"]]]
+    renderers = options[:renderers] || %{}
+    if renderers[:render_paragraph] do
+      renderers[:render_paragraph].(node, dast, options)
+    else
+      ["<p>" | [Enum.map(node.children, &(render(&1, dast, options))) | ["</p>"]]]
+    end
   end
 
-  def render(
-    %{type: "heading"} = node,
-    dast,
-    %{renderers: %{render_heading: render_heading}} = options
-  ) do
-    render_heading.(node, dast, options)
-  end
   def render(%{type: "heading"} = node, dast, options) do
-    tag = "h#{node.level}"
-    ["<#{tag}>" | [Enum.map(node.children, &(render(&1, dast, options))) | ["</#{tag}>"]]]
+    renderers = options[:renderers] || %{}
+    if renderers[:render_heading] do
+      renderers[:render_heading].(node, dast, options)
+    else
+      tag = "h#{node.level}"
+      ["<#{tag}>" | [Enum.map(node.children, &(render(&1, dast, options))) | ["</#{tag}>"]]]
+    end
   end
 
-  def render(
-    %{type: "link"} = node,
-    dast,
-    %{renderers: %{render_link: render_link}} = options
-  ) do
-    render_link.(node, dast, options)
-  end
   def render(%{type: "link"} = node, dast, options) do
-    [~s(<a href="#{node.url}">) | [Enum.map(node.children, &(render(&1, dast, options))) | ["</a>"]]]
+    renderers = options[:renderers] || %{}
+    if renderers[:render_link] do
+      renderers[:render_link].(node, dast, options)
+    else
+      [~s(<a href="#{node.url}">) | [Enum.map(node.children, &(render(&1, dast, options))) | ["</a>"]]]
+    end
   end
 
   def render(
@@ -68,27 +62,26 @@ defmodule DatoCMS.StructuredText do
     render_link_to_record.(item, node)
   end
 
-  def render(
-    %{type: "span", marks: ["highlight" | _marks]} = node,
-    dast,
-    %{renderers: %{render_highlight: render_highlight}} = options
-  ) do
-    render_highlight.(node, dast, options)
-  end
-
   def render(%{type: "span", marks: ["highlight" | marks]} = node, dast, options) do
-    simplified = Map.put(node, :marks, marks)
-    ~s(<span class="highlight">) <> render(simplified, dast, options) <> "</span>"
+    renderers = options[:renderers] || %{}
+    if renderers[:render_highlight] do
+      renderers[:render_highlight].(node, dast, options)
+    else
+      simplified = Map.put(node, :marks, marks)
+      ~s(<span class="highlight">) <> render(simplified, dast, options) <> "</span>"
+    end
   end
 
   def render(%{type: "span", marks: [mark | marks]} = node, dast, options) do
-    simplified = Map.put(node, :marks, marks)
-    node = @mark_nodes[mark]
-    "<#{node}>" <> render(simplified, dast, options) <> "</#{node}>"
-  end
-
-  def render(%{type: "span", marks: []} = node, _dast, _options) do
-    node.value
+    renderers = options[:renderers] || %{}
+    renderer_key = :"render_#{mark}"
+    if renderers[renderer_key] do
+      renderers[renderer_key].(node, dast, options)
+    else
+      simplified = Map.put(node, :marks, marks)
+      node = @mark_nodes[mark]
+      "<#{node}>" <> render(simplified, dast, options) <> "</#{node}>"
+    end
   end
 
   def render(%{type: "span"} = node, _dast, _options) do
