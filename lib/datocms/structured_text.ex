@@ -1,4 +1,12 @@
 defmodule DatoCMS.StructuredText do
+  @mark_nodes %{
+    "code" => "code",
+    "emphasis" => "em",
+    "strikethrough" => "del",
+    "strong" => "strong",
+    "underline" => "u"
+  }
+
   def to_html(%{value: %{schema: "dast", document: document}} = dast, options \\ %{}) do
     render(document, dast, options)
     |> Enum.join("")
@@ -72,14 +80,6 @@ defmodule DatoCMS.StructuredText do
     simplified = Map.put(node, :marks, marks)
     ~s(<span class="highlight">) <> render(simplified, dast, options) <> "</span>"
   end
-
-  @mark_nodes %{
-    "code" => "code",
-    "emphasis" => "em",
-    "strikethrough" => "del",
-    "strong" => "strong",
-    "underline" => "u"
-  }
 
   def render(%{type: "span", marks: [mark | marks]} = node, dast, options) do
     simplified = Map.put(node, :marks, marks)
