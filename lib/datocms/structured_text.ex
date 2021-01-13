@@ -44,24 +44,6 @@ defmodule DatoCMS.StructuredText do
     end
   end
 
-  def render(
-    %{type: "inlineItem"} = node,
-    dast,
-    %{renderers: %{render_inline_record: render_inline_record}}
-  ) do
-    item = Enum.find(dast.links, &(&1.id == node.item))
-    render_inline_record.(item)
-  end
-
-  def render(
-    %{type: "itemLink"} = node,
-    dast,
-    %{renderers: %{render_link_to_record: render_link_to_record}}
-  ) do
-    item = Enum.find(dast.links, &(&1.id == node.item))
-    render_link_to_record.(item, node)
-  end
-
   def render(%{type: "span", marks: ["highlight" | marks]} = node, dast, options) do
     renderers = options[:renderers] || %{}
     if renderers[:render_highlight] do
@@ -86,5 +68,23 @@ defmodule DatoCMS.StructuredText do
 
   def render(%{type: "span"} = node, _dast, _options) do
     node.value
+  end
+
+  def render(
+    %{type: "inlineItem"} = node,
+    dast,
+    %{renderers: %{render_inline_record: render_inline_record}}
+  ) do
+    item = Enum.find(dast.links, &(&1.id == node.item))
+    render_inline_record.(item)
+  end
+
+  def render(
+    %{type: "itemLink"} = node,
+    dast,
+    %{renderers: %{render_link_to_record: render_link_to_record}}
+  ) do
+    item = Enum.find(dast.links, &(&1.id == node.item))
+    render_link_to_record.(item, node)
   end
 end
