@@ -114,4 +114,26 @@ defmodule DatoCMS.StructuredText do
     """
     raise CustomRenderersError, message: message
   end
+
+  def render(
+    %{type: "block"} = node,
+    dast,
+    %{renderers: %{render_block: render_block}}
+  ) do
+    block = Enum.find(dast.blocks, &(&1.id == node.item))
+    render_block.(block)
+  end
+  def render(%{type: "block"} = _node, _dast, %{renderers: renderers}) do
+    message = """
+    No `render_block/1` function supplied.
+    Renderers supplied via options: #{inspect(Map.keys(renderers))}
+    """
+    raise CustomRenderersError, message: message
+  end
+  def render(%{type: "block"} = _node, _dast, _options) do
+    message = """
+    No `render_block/1` function supplied.
+    """
+    raise CustomRenderersError, message: message
+  end
 end

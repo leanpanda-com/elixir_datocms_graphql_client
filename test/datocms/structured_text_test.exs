@@ -62,6 +62,10 @@ defmodule DatoCMS.StructuredTextTest.CustomRenderers do
   def render_link_to_record(%{__typename: "ItemRecord"} = item, node) do
     [~s(<a href="/items/#{item.id}">#{hd(node.children).value}</a>)]
   end
+
+  def render_block(%{__typename: "MyarticleblockRecord"} = block) do
+    [~s(<div><h1>#{block.articleBlockTitle}</h1><p><img src="#{block.image.url}"></p></div>)]
+  end
 end
 
 defmodule DatoCMS.StructuredTextTest do
@@ -222,6 +226,26 @@ defmodule DatoCMS.StructuredTextTest do
     assert_raise(
       DatoCMS.StructuredText.CustomRenderersError,
       ~r(No `render_link_to_record/2`),
+      fn ->
+        to_html(context.structured_text)
+      end
+    )
+  end
+
+  @tag structured_text: json_fixture!("block")
+  test "block", context do
+    options = %{renderers: %{render_block: &render_block/1}}
+    result = to_html(context.structured_text, options)
+
+    expected = "<div><h1>Ciao Ciao</h1><p><img src=\"https://www.datocms-assets.com/40600/1612973334-screenshot-from-2021-01-22-18-26-44.png\"></p></div>"
+    assert(result == expected)
+  end
+
+  @tag structured_text: json_fixture!("block")
+  test "block without render_block", context do
+    assert_raise(
+      DatoCMS.StructuredText.CustomRenderersError,
+      ~r(No `render_block/1`),
       fn ->
         to_html(context.structured_text)
       end

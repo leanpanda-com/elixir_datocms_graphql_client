@@ -1,0 +1,25 @@
+{
+  "value": {
+    "schema": "dast",
+    "document": {
+      "type": "root",
+      "children": [
+        {
+          "item": "20291831",
+          "type": "block"
+        }
+      ]
+    }
+  },
+  "blocks": [
+    {
+      "__typename": "MyarticleblockRecord",
+      "id": "20291831",
+      "articleBlockTitle": "Ciao Ciao",
+      "image": {
+        "id": "7710893",
+        "url": "https://www.datocms-assets.com/40600/1612973334-screenshot-from-2021-01-22-18-26-44.png"
+      }
+    }
+  ]
+}
