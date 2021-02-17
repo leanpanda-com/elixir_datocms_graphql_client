@@ -198,9 +198,14 @@ defmodule DatoCMS.StructuredTextTest do
 
   @tag structured_text: json_fixture!("inline-item")
   test "inlineItem without render_inline_record", context do
-    assert_raise FunctionClauseError, fn ->
-      to_html(context.structured_text)
-    end
+    assert_raise(
+      DatoCMS.StructuredText.CustomRenderersError,
+      ~r(No `render_inline_record/1`),
+      fn ->
+        options = %{renderers: %{render_underline: &render_custom_underline/3}}
+        to_html(context.structured_text, options)
+      end
+    )
   end
 
   @tag structured_text: json_fixture!("item-link")
@@ -214,9 +219,13 @@ defmodule DatoCMS.StructuredTextTest do
 
   @tag structured_text: json_fixture!("item-link")
   test "itemLink without render_link_to_record", context do
-    assert_raise FunctionClauseError, fn ->
-      to_html(context.structured_text)
-    end
+    assert_raise(
+      DatoCMS.StructuredText.CustomRenderersError,
+      ~r(No `render_link_to_record/2`),
+      fn ->
+        to_html(context.structured_text)
+      end
+    )
   end
 
   @tag structured_text: "Wrong!"

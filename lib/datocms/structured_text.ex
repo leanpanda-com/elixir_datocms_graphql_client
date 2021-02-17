@@ -1,4 +1,8 @@
 defmodule DatoCMS.StructuredText do
+  defmodule CustomRenderersError do
+    defexception [:message]
+  end
+
   @mark_nodes %{
     "code" => "code",
     "emphasis" => "em",
@@ -67,8 +71,6 @@ defmodule DatoCMS.StructuredText do
     [node.value]
   end
 
-  # "inlineItem" will always raise if no `render_inline_record`
-  # has been provided.
   def render(
     %{type: "inlineItem"} = node,
     dast,
@@ -77,9 +79,20 @@ defmodule DatoCMS.StructuredText do
     item = Enum.find(dast.links, &(&1.id == node.item))
     render_inline_record.(item)
   end
+  def render(%{type: "inlineItem"} = _node, _dast, %{renderers: renderers}) do
+    message = """
+    No `render_inline_record/1` function supplied.
+    Renderers supplied via options: #{inspect(Map.keys(renderers))}
+    """
+    raise CustomRenderersError, message: message
+  end
+  def render(%{type: "inlineItem"} = _node, _dast, _options) do
+    message = """
+    No `render_inline_record/1` function supplied via options.
+    """
+    raise CustomRenderersError, message: message
+  end
 
-  # "itemLink" will always raise if no `render_link_to_record`
-  # has been provided.
   def render(
     %{type: "itemLink"} = node,
     dast,
@@ -87,5 +100,18 @@ defmodule DatoCMS.StructuredText do
   ) do
     item = Enum.find(dast.links, &(&1.id == node.item))
     render_link_to_record.(item, node)
+  end
+  def render(%{type: "itemLink"} = _node, _dast, %{renderers: renderers}) do
+    message = """
+    No `render_link_to_record/2` function supplied.
+    Renderers supplied via options: #{inspect(Map.keys(renderers))}
+    """
+    raise CustomRenderersError, message: message
+  end
+  def render(%{type: "itemLink"} = _node, _dast, _options) do
+    message = """
+    No `render_link_to_record/2` function supplied.
+    """
+    raise CustomRenderersError, message: message
   end
 end
