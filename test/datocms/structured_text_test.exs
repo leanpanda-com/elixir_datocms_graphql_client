@@ -131,10 +131,10 @@ defmodule DatoCMS.StructuredTextTest do
 
     expected =
       "<p>" <>
-      "<strong><span class=\"highlight\">Some</span></strong> " <>
+      "<strong><mark>Some</mark></strong> " <>
       "styled " <>
       "<em>text</em> " <>
-      "<span class=\"highlight\">including</span> " <>
+      "<mark>including</mark> " <>
       "<code>integers</code>, " <>
       "<del>cancelled words</del>, and " <>
       "<u>underlined</u> things." <>

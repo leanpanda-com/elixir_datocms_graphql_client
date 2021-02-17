@@ -2,6 +2,7 @@ defmodule DatoCMS.StructuredText do
   @mark_nodes %{
     "code" => "code",
     "emphasis" => "em",
+    "highlight" => "mark",
     "strikethrough" => "del",
     "strong" => "strong",
     "underline" => "u"
@@ -46,17 +47,6 @@ defmodule DatoCMS.StructuredText do
     else
       inner = Enum.flat_map(node.children, &(render(&1, dast, options)))
       [~s(<a href="#{node.url}">)] ++ inner ++ ["</a>"]
-    end
-  end
-
-  def render(%{type: "span", marks: ["highlight" | marks]} = node, dast, options) do
-    renderers = options[:renderers] || %{}
-    if renderers[:render_highlight] do
-      renderers[:render_highlight].(node, dast, options)
-    else
-      simplified = Map.put(node, :marks, marks)
-      inner = render(simplified, dast, options)
-      [~s(<span class="highlight">)] ++ inner ++ ["</span>"]
     end
   end
 
