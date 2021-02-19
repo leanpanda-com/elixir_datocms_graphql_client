@@ -11,7 +11,7 @@ config :my_app,
 
 ```elixir
 datocms_api_key = Application.fetch_env!(:my_app, :api_key)
-DatoCMS.GraphQLClient.config(datocms_api_key)
+DatoCMS.GraphQLClient.config(api_key: datocms_api_key)
 ```
 
 # Queries
@@ -66,17 +66,18 @@ into this:
 <p>Hi There</p>
 ```
 
-The types are transformed like this:
+By default, the types are transformed as follows:
 
-| type       | result           |
-|------------|------------------|
-| root       | ...              |
-| paragraph  | `<p>...</p>`     |
-| span       | ...              |
-| headings   | `<hx>...</hx>`   |
-| inlineItem | (see below)      |
-| itemLink   | (see below)      |
-| link       | `<a ...>...</a>` |
+| type       | result                                |
+|------------|---------------------------------------|
+| root       | the rendered children                 |
+| paragraph  | `<p>...</p>`                          |
+| span       | the node value                        |
+| heading    | `<hn>...</hn>` where `n` is the level |
+| link       | `<a ...>...</a>`                      |
+| block      | requires custom renderer (see below)  |
+| inlineItem | requires custom renderer (see below)  |
+| itemLink   | requires custom renderer (see below)  |
 
 Note that text styling is transformed as follows:
 
@@ -89,7 +90,7 @@ Note that text styling is transformed as follows:
 | strong        | strong |
 | underline     | u      |
 
-## Ovrrides
+## Optional Custom Renderers
 
 All of these types of rendering can be overriden.
 
@@ -97,10 +98,7 @@ This is achieved by passing custom renderers in the second `options`
 parameter:
 
 ```elixir
-import DatoCMS.StructuredText, only: [
-  to_html: 2,
-  render: 3
-]
+import DatoCMS.StructuredText, only: [to_html: 2, render: 3]
 
 def custom_paragraph(node, _dast, _options) do
   ["<section>"] ++
@@ -114,7 +112,7 @@ options = %{
   }
 }
 
-DatoCMS.StructuredText.to_html(structured_text)
+result = to_html(structured_text, options)
 ```
 
 Note: custom renderers need to return a `list` of strings.
@@ -132,10 +130,11 @@ The custom renderers that can be used in this way are the following:
 * `render_underline/3`,
 * `render_span/3`.
 
-## Inline items and item links
+## Required Renderers
 
-If your structured text includes your DatoCMS items
-inline or as links, you'll need to supply a custom renderer.
+If your structured text includes blocks, inline items
+or item links, you'll need to supply a custom renderer.
 
-* `render_inline_record/3` for inline items,
-* `render_link_to_record/3` for item links.
+* `render_block/1` for blocks,
+* `render_inline_record/1` for inline items,
+* `render_link_to_record/2` for item links.
