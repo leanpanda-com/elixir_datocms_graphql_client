@@ -68,29 +68,26 @@ into this:
 
 The types are transformed like this:
 
-+------------+----------------+
-| type       | result         |
-+------------+----------------+
-| root       | ...            |
-| paragraph  | <p>...</p>     |
-| span       | ...            |
-| headings   | <hx>...</hx>   |
-| inlineItem | (see below)    |
-| itemLink   | (see below)    |
-| link       | <a ...>...</a> |
-+------------+----------------+
+| type       | result           |
+|------------|------------------|
+| root       | ...              |
+| paragraph  | `<p>...</p>`     |
+| span       | ...              |
+| headings   | `<hx>...</hx>`   |
+| inlineItem | (see below)      |
+| itemLink   | (see below)      |
+| link       | `<a ...>...</a>` |
 
 Note that text styling is transformed as follows:
 
-+---------------+--------+
 | mark          | tag    |
-+---------------+--------+
+|---------------|--------|
 | code          | code   |
 | emphasis      | em     |
+| highlight     | mark   |
 | strikethrough | del    |
 | strong        | strong |
 | underline     | u      |
-+---------------+--------+
 
 ## Ovrrides
 
