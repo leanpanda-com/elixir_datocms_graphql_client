@@ -8,6 +8,49 @@ defmodule DatoCMS.StructuredTextTest.CustomRenderers do
       ["</#{tag}>"]
   end
 
+  def render_custom_blockquote(node, _dast, _options) do
+    caption = if Map.has_key?(node, :attribution) do
+      ["— #{node.attribution}"]
+    else
+      []
+    end
+
+    children = hd(node.children).children
+    span_text =
+      children
+      |> Enum.filter(&(&1.type == "span"))
+      |> Enum.map(&(&1.value))
+      |> Enum.join(" ")
+
+    ["<q>"] ++ [span_text] ++ caption ++ ["</q>"]
+  end
+
+  def render_custom_bulleted_list(node, dast, options) do
+    ["<ul class=\"custom-list\">"] ++
+      Enum.flat_map(
+        node.children,
+        fn list_item ->
+          ["<li>"] ++
+            Enum.flat_map(list_item.children, &(render(&1, dast, options))) ++
+            ["</li>"]
+        end
+      ) ++
+      ["</ul>"]
+  end
+
+  def render_custom_numbered_list(node, dast, options) do
+    ["<ol class=\"custom-list\">"] ++
+      Enum.flat_map(
+        node.children,
+        fn list_item ->
+          ["<li>"] ++
+            Enum.flat_map(list_item.children, &(render(&1, dast, options))) ++
+            ["</li>"]
+        end
+      ) ++
+      ["</ol>"]
+  end
+
   def render_custom_paragraph(node, dast, options) do
     ["<div>"] ++
       Enum.map(node.children, &(render(&1, dast, options))) ++
@@ -109,6 +152,57 @@ defmodule DatoCMS.StructuredTextTest do
     result = to_html(context.structured_text, options)
 
     expected = "<h2>The Title!!!</h2>"
+    assert(result == expected)
+  end
+
+  @tag structured_text: json_fixture!("blockquote")
+  test "blockquotes", context do
+    result = to_html(context.structured_text)
+
+    expected = "<figure><blockquote><p>Some quote...</p></blockquote><figcaption>— By me</figcaption></figure>"
+    assert(result == expected)
+  end
+
+  @tag structured_text: json_fixture!("blockquote")
+  test "custom blockquote renderer", context do
+    options = %{renderers: %{render_blockquote: &render_custom_blockquote/3}}
+    result = to_html(context.structured_text, options)
+
+    expected = "<q>Some quote...— By me</q>"
+    assert(result == expected)
+  end
+
+  @tag structured_text: json_fixture!("bulleted-list")
+  test "bulleted lists", context do
+    result = to_html(context.structured_text)
+
+    expected = "<ul><li><p>Point 1</p></li><li><p>Point 2</p></li></ul>"
+    assert(result == expected)
+  end
+
+  @tag structured_text: json_fixture!("bulleted-list")
+  test "custom bulleted lists", context do
+    options = %{renderers: %{render_bulleted_list: &render_custom_bulleted_list/3}}
+    result = to_html(context.structured_text, options)
+
+    expected = "<ul class=\"custom-list\"><li><p>Point 1</p></li><li><p>Point 2</p></li></ul>"
+    assert(result == expected)
+  end
+
+  @tag structured_text: json_fixture!("numbered-list")
+  test "numbered lists", context do
+    result = to_html(context.structured_text)
+
+    expected = "<ol><li><p>First</p></li><li><p>Second</p></li></ol>"
+    assert(result == expected)
+  end
+
+  @tag structured_text: json_fixture!("numbered-list")
+  test "custom numbered lists", context do
+    options = %{renderers: %{render_numbered_list: &render_custom_numbered_list/3}}
+    result = to_html(context.structured_text, options)
+
+    expected = "<ol class=\"custom-list\"><li><p>First</p></li><li><p>Second</p></li></ol>"
     assert(result == expected)
   end
 

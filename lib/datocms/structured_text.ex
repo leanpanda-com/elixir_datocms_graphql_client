@@ -23,6 +23,62 @@ defmodule DatoCMS.StructuredText do
     Enum.flat_map(node.children, &(render(&1, dast, options)))
   end
 
+  def render(%{type: "blockquote"} = node, dast, options) do
+    render_blockquote = get_in(options, [:renderers, :render_blockquote])
+    if render_blockquote do
+      render_blockquote.(node, dast, options)
+    else
+      caption = if Map.has_key?(node, :attribution) do
+        ["<figcaption>— #{node.attribution}</figcaption>"]
+      else
+        []
+      end
+
+      ["<figure>"] ++
+        ["<blockquote>"] ++
+        Enum.flat_map(node.children, &(render(&1, dast, options))) ++
+        ["</blockquote>"] ++
+        caption ++
+        ["</figure>"]
+    end
+  end
+
+  def render(%{type: "list", style: "bulleted"} = node, dast, options) do
+    render_bulleted_list = get_in(options, [:renderers, :render_bulleted_list])
+    if render_bulleted_list do
+      render_bulleted_list.(node, dast, options)
+    else
+      ["<ul>"] ++
+        Enum.flat_map(
+          node.children,
+          fn list_item ->
+            ["<li>"] ++
+              Enum.flat_map(list_item.children, &(render(&1, dast, options))) ++
+              ["</li>"]
+          end
+        ) ++
+        ["</ul>"]
+    end
+  end
+
+  def render(%{type: "list", style: "numbered"} = node, dast, options) do
+    render_numbered_list = get_in(options, [:renderers, :render_numbered_list])
+    if render_numbered_list do
+      render_numbered_list.(node, dast, options)
+    else
+      ["<ol>"] ++
+        Enum.flat_map(
+          node.children,
+          fn list_item ->
+            ["<li>"] ++
+              Enum.flat_map(list_item.children, &(render(&1, dast, options))) ++
+              ["</li>"]
+          end
+        ) ++
+        ["</ol>"]
+    end
+  end
+
   def render(%{type: "paragraph"} = node, dast, options) do
     renderers = options[:renderers] || %{}
     if renderers[:render_paragraph] do

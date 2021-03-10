@@ -1,0 +1,25 @@
+{
+  "value": {
+    "schema": "dast",
+    "document": {
+      "type": "root",
+      "children": [
+        {
+          "type": "blockquote",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "span",
+                  "value": "Some quote..."
+                }
+              ]
+            }
+          ],
+          "attribution": "By me"
+        }
+      ]
+    }
+  }
+}

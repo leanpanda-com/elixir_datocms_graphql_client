@@ -119,16 +119,19 @@ Note: custom renderers need to return a `list` of strings.
 
 The custom renderers that can be used in this way are the following:
 
-* `render_paragraph/3`,
-* `render_heading/3`,
-* `render_link/3`,
-* `render_highlight/3`,
+* `render_blockquote/3`,
+* `render_bulleted_list/3`,
 * `render_code/3`,
 * `render_emphasis/3`,
+* `render_heading/3`,
+* `render_highlight/3`,
+* `render_link/3`,
+* `render_numbered_list/3`,
+* `render_paragraph/3`,
+* `render_span/3`.
 * `render_strikethrough/3`,
 * `render_strong/3`,
 * `render_underline/3`,
-* `render_span/3`.
 
 ## Required Renderers
 
