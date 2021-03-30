@@ -33,7 +33,7 @@ defmodule DatoCMS.GraphqlClient.MixProject do
   defp deps do
     [
       {:eventsource_ex, "~> 1.0"},
-      {:ex_doc, "~> 0.21.2", only: :dev},
+      {:ex_doc, "~> 0.21", only: :dev},
       {:jason, ">= 0.0.0"},
       {:memoize, ">= 1.3.0"},
       {:neuron, "~> 4.1.0"}
