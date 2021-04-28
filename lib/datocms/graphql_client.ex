@@ -10,7 +10,7 @@ defmodule DatoCMS.GraphQLClient do
     |> Keyword.get(:backend, StandardClient)
   end
 
-  def configure(opts) do
+  def configure(opts \\ []) do
     client().configure(opts)
   end
 
