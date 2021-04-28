@@ -14,6 +14,14 @@ defmodule DatoCMS.GraphQLClient do
     client().configure(opts)
   end
 
+  def query!(query, params \\ %{}) do
+    client().query!(key, query, params)
+  end
+
+  def query(query, params \\ %{}) do
+    client().query(key, query, params)
+  end
+
   def fetch!(key, query, params \\ %{}) do
     client().fetch!(key, query, params)
   end

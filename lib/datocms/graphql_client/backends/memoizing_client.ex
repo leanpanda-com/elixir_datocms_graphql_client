@@ -6,6 +6,14 @@ defmodule DatoCMS.GraphQLClient.Backends.MemoizingClient do
     StandardClient.configure(opts)
   end
 
+  defmemo query!(query, params \\ %{}) do
+    StandardClient.query!(query, params)
+  end
+
+  defmemo query(query, params \\ %{}) do
+    StandardClient.query(query, params)
+  end
+
   defmemo fetch!(key, query, params \\ %{}) do
     StandardClient.fetch!(key, query, params)
   end
