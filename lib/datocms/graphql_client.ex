@@ -15,11 +15,11 @@ defmodule DatoCMS.GraphQLClient do
   end
 
   def query!(query, params \\ %{}) do
-    client().query!(key, query, params)
+    client().query!(query, params)
   end
 
   def query(query, params \\ %{}) do
-    client().query(key, query, params)
+    client().query(query, params)
   end
 
   def fetch!(key, query, params \\ %{}) do
