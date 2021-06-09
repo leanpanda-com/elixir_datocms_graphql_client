@@ -11,7 +11,7 @@ config :my_app,
 
 ```elixir
 datocms_api_key = Application.fetch_env!(:my_app, :api_key)
-DatoCMS.GraphQLClient.config(api_key: datocms_api_key)
+DatoCMS.GraphQLClient.configure(api_key: datocms_api_key)
 ```
 
 # Queries
