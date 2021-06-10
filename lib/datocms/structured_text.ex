@@ -43,6 +43,15 @@ defmodule DatoCMS.StructuredText do
     end
   end
 
+  def render(%{type: "code", code: code} = node, dast, options) do
+    render_code = get_in(options, [:renderers, :render_blockquote])
+    if render_code do
+      render_code.(node, dast, options)
+    else
+      ["<code>", code, "</code>"]
+    end
+  end
+
   def render(%{type: "list", style: "bulleted"} = node, dast, options) do
     render_bulleted_list = get_in(options, [:renderers, :render_bulleted_list])
     if render_bulleted_list do
