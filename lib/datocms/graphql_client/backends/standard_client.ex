@@ -164,6 +164,9 @@ defmodule DatoCMS.GraphQLClient.Backends.StandardClient do
   defp handle_response({:error, %HTTPoison.Error{id: nil, reason: :nxdomain}}) do
     {:error, "Cannot resolve domain"}
   end
+  defp handle_response({:error, %HTTPoison.Error{id: nil, reason: reason}}) do
+    {:error, "Failed to connect, reason: #{reason}"}
+  end
   defp handle_response({:error, %Neuron.Response{body: %{data: data}}}) do
     {:error, "Request failed: #{inspect(data)}"}
   end
