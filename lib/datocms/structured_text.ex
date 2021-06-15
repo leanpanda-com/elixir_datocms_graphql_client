@@ -44,7 +44,7 @@ defmodule DatoCMS.StructuredText do
   end
 
   def render(%{type: "code", code: code} = node, dast, options) do
-    render_code = get_in(options, [:renderers, :render_blockquote])
+    render_code = get_in(options, [:renderers, :render_code])
     if render_code do
       render_code.(node, dast, options)
     else
