@@ -1,0 +1,14 @@
+{
+  "value": {
+    "schema": "dast",
+    "document": {
+      "type": "root",
+      "children": [
+        {
+          "type": "code",
+          "code": "from code block"
+        }
+      ]
+    }
+  }
+}

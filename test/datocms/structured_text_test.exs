@@ -76,6 +76,9 @@ defmodule DatoCMS.StructuredTextTest.CustomRenderers do
       render(simplified, dast, options) ++
       ["</span>"]
   end
+  def render_custom_code(%{type: "code", code: code}, _dast, _options) do
+    ["<pre>#{code}</pre>"]
+  end
 
   def render_custom_emphasis(%{marks: ["emphasis" | marks]} = span, dast, options) do
     simplified = Map.put(span, :marks, marks)
@@ -250,11 +253,20 @@ defmodule DatoCMS.StructuredTextTest do
   end
 
   @tag structured_text: json_fixture!("text-styles")
-  test "custom code", context do
+  test "custom code mark", context do
     options = %{renderers: %{render_code: &render_custom_code/3}}
     result = to_html(context.structured_text, options)
 
     expected = ~s(<span class="code">integers</span>)
+    assert(String.contains?(result, expected))
+  end
+
+  @tag structured_text: json_fixture!("code")
+  test "custom code block", context do
+    options = %{renderers: %{render_code: &render_custom_code/3}}
+    result = to_html(context.structured_text, options)
+
+    expected = ~s(<pre>from code block</pre>)
     assert(String.contains?(result, expected))
   end
 
