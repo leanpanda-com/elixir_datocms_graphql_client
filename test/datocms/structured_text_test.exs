@@ -307,13 +307,23 @@ defmodule DatoCMS.StructuredTextTest do
   end
 
   @tag structured_text: json_fixture!("inline-item")
+  test "inlineItem without renderers", context do
+    assert_raise(
+      DatoCMS.StructuredText.CustomRenderersError,
+      ~r(No `:renderers` supplied in options),
+      fn ->
+        to_html(context.structured_text, %{})
+      end
+    )
+  end
+
+  @tag structured_text: json_fixture!("inline-item")
   test "inlineItem without render_inline_record", context do
     assert_raise(
       DatoCMS.StructuredText.CustomRenderersError,
-      ~r(No `render_inline_record/1`),
+      ~r(No `render_inline_record` function supplied),
       fn ->
-        options = %{renderers: %{render_underline: &render_custom_underline/3}}
-        to_html(context.structured_text, options)
+        to_html(context.structured_text, %{renderers: %{}})
       end
     )
   end
@@ -328,12 +338,23 @@ defmodule DatoCMS.StructuredTextTest do
   end
 
   @tag structured_text: json_fixture!("item-link")
+  test "itemLink without renderers", context do
+    assert_raise(
+      DatoCMS.StructuredText.CustomRenderersError,
+      ~r(No `:renderers` supplied in options),
+      fn ->
+        to_html(context.structured_text)
+      end
+    )
+  end
+
+  @tag structured_text: json_fixture!("item-link")
   test "itemLink without render_link_to_record", context do
     assert_raise(
       DatoCMS.StructuredText.CustomRenderersError,
-      ~r(No `render_link_to_record/2`),
+      ~r(No `render_link_to_record` function supplied),
       fn ->
-        to_html(context.structured_text)
+        to_html(context.structured_text, %{renderers: %{}})
       end
     )
   end
@@ -351,7 +372,18 @@ defmodule DatoCMS.StructuredTextTest do
   test "block without render_block", context do
     assert_raise(
       DatoCMS.StructuredText.CustomRenderersError,
-      ~r(No `render_block/1`),
+      ~r(No `render_block` function supplied in options\.renders),
+      fn ->
+        to_html(context.structured_text, %{renderers: %{}})
+      end
+    )
+  end
+
+  @tag structured_text: json_fixture!("block")
+  test "block without renderers", context do
+    assert_raise(
+      DatoCMS.StructuredText.CustomRenderersError,
+      ~r(No `:renderers` supplied in options),
       fn ->
         to_html(context.structured_text)
       end
