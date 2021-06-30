@@ -26,7 +26,7 @@ defmodule DatoCMS.StructuredText do
   def render(%{type: "blockquote"} = node, dast, options) do
     render_blockquote = get_in(options, [:renderers, :render_blockquote])
     if render_blockquote do
-      render_blockquote.(node, dast, options)
+      render_blockquote.(node, dast, options) |> list()
     else
       caption = if Map.has_key?(node, :attribution) do
         ["<figcaption>— #{node.attribution}</figcaption>"]
@@ -46,7 +46,7 @@ defmodule DatoCMS.StructuredText do
   def render(%{type: "code", code: code} = node, dast, options) do
     render_code = get_in(options, [:renderers, :render_code])
     if render_code do
-      render_code.(node, dast, options)
+      render_code.(node, dast, options) |> list()
     else
       ["<code>", code, "</code>"]
     end
@@ -55,7 +55,7 @@ defmodule DatoCMS.StructuredText do
   def render(%{type: "list", style: "bulleted"} = node, dast, options) do
     render_bulleted_list = get_in(options, [:renderers, :render_bulleted_list])
     if render_bulleted_list do
-      render_bulleted_list.(node, dast, options)
+      render_bulleted_list.(node, dast, options) |> list()
     else
       ["<ul>"] ++
         Enum.flat_map(
@@ -73,7 +73,7 @@ defmodule DatoCMS.StructuredText do
   def render(%{type: "list", style: "numbered"} = node, dast, options) do
     render_numbered_list = get_in(options, [:renderers, :render_numbered_list])
     if render_numbered_list do
-      render_numbered_list.(node, dast, options)
+      render_numbered_list.(node, dast, options) |> list()
     else
       ["<ol>"] ++
         Enum.flat_map(
@@ -91,7 +91,7 @@ defmodule DatoCMS.StructuredText do
   def render(%{type: "paragraph"} = node, dast, options) do
     renderers = options[:renderers] || %{}
     if renderers[:render_paragraph] do
-      renderers[:render_paragraph].(node, dast, options)
+      renderers[:render_paragraph].(node, dast, options) |> list()
     else
       inner = Enum.flat_map(node.children, &(render(&1, dast, options)))
       ["<p>"] ++ inner ++ ["</p>"]
@@ -101,7 +101,7 @@ defmodule DatoCMS.StructuredText do
   def render(%{type: "heading"} = node, dast, options) do
     renderers = options[:renderers] || %{}
     if renderers[:render_heading] do
-      renderers[:render_heading].(node, dast, options)
+      renderers[:render_heading].(node, dast, options) |> list()
     else
       tag = "h#{node.level}"
       inner = Enum.flat_map(node.children, &(render(&1, dast, options)))
@@ -112,7 +112,7 @@ defmodule DatoCMS.StructuredText do
   def render(%{type: "link"} = node, dast, options) do
     renderers = options[:renderers] || %{}
     if renderers[:render_link] do
-      renderers[:render_link].(node, dast, options)
+      renderers[:render_link].(node, dast, options) |> list()
     else
       inner = Enum.flat_map(node.children, &(render(&1, dast, options)))
       [~s(<a href="#{node.url}">)] ++ inner ++ ["</a>"]
@@ -123,7 +123,7 @@ defmodule DatoCMS.StructuredText do
     renderers = options[:renderers] || %{}
     renderer_key = :"render_#{mark}"
     if renderers[renderer_key] do
-      renderers[renderer_key].(node, dast, options)
+      renderers[renderer_key].(node, dast, options) |> list()
     else
       simplified = Map.put(node, :marks, marks)
       inner = render(simplified, dast, options)
@@ -139,7 +139,7 @@ defmodule DatoCMS.StructuredText do
   def render(%{type: "inlineItem"} = node, dast, options) do
     with {:ok, renderer} <- renderer(options, :render_inline_record),
          {:ok, item} <- linked_item(node, dast) do
-      renderer.(item)
+      renderer.(item) |> list()
     else
       {:error, message} ->
         raise CustomRenderersError, message: message
@@ -149,7 +149,7 @@ defmodule DatoCMS.StructuredText do
   def render(%{type: "itemLink"} = node, dast, options) do
     with {:ok, renderer} <- renderer(options, :render_link_to_record),
          {:ok, item} <- linked_item(node, dast) do
-      renderer.(item, node)
+      renderer.(item, node) |> list()
     else
       {:error, message} ->
         raise CustomRenderersError, message: message
@@ -159,7 +159,7 @@ defmodule DatoCMS.StructuredText do
   def render(%{type: "block"} = node, dast, options) do
     with {:ok, renderer} <- renderer(options, :render_block),
          {:ok, item} <- block(node, dast) do
-      renderer.(item)
+      renderer.(item) |> list()
     else
       {:error, message} ->
         raise CustomRenderersError, message: message
@@ -268,4 +268,7 @@ defmodule DatoCMS.StructuredText do
       """
     }
   end
+
+  defp list(item) when is_list(item), do: item
+  defp list(item), do: [item]
 end

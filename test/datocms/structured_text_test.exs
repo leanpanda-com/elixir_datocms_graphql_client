@@ -10,9 +10,9 @@ defmodule DatoCMS.StructuredTextTest.CustomRenderers do
 
   def render_custom_blockquote(node, _dast, _options) do
     caption = if Map.has_key?(node, :attribution) do
-      ["— #{node.attribution}"]
+      "— #{node.attribution}"
     else
-      []
+      ""
     end
 
     children = hd(node.children).children
@@ -22,7 +22,7 @@ defmodule DatoCMS.StructuredTextTest.CustomRenderers do
       |> Enum.map(&(&1.value))
       |> Enum.join(" ")
 
-    ["<q>"] ++ [span_text] ++ caption ++ ["</q>"]
+    "<q>#{span_text}#{caption}</q>"
   end
 
   def render_custom_bulleted_list(node, dast, options) do
@@ -77,7 +77,7 @@ defmodule DatoCMS.StructuredTextTest.CustomRenderers do
       ["</span>"]
   end
   def render_custom_code(%{type: "code", code: code}, _dast, _options) do
-    ["<pre>#{code}</pre>"]
+    "<pre>#{code}</pre>"
   end
 
   def render_custom_emphasis(%{marks: ["emphasis" | marks]} = span, dast, options) do
@@ -102,15 +102,15 @@ defmodule DatoCMS.StructuredTextTest.CustomRenderers do
   end
 
   def render_inline_record(%{__typename: "ItemRecord"} = item) do
-    ["<h1>#{item.title}</h1><p>#{item.body}</p>"]
+    "<h1>#{item.title}</h1><p>#{item.body}</p>"
   end
 
   def render_link_to_record(%{__typename: "ItemRecord"} = item, node) do
-    [~s(<a href="/items/#{item.id}">#{hd(node.children).value}</a>)]
+    ~s(<a href="/items/#{item.id}">#{hd(node.children).value}</a>)
   end
 
   def render_block(%{__typename: "MyarticleblockRecord"} = block) do
-    [~s(<div><h1>#{block.articleBlockTitle}</h1><p><img src="#{block.image.url}"></p></div>)]
+    ~s(<div><h1>#{block.articleBlockTitle}</h1><p><img src="#{block.image.url}"></p></div>)
   end
 end
 
