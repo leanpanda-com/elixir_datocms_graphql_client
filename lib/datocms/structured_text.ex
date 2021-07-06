@@ -132,6 +132,10 @@ defmodule DatoCMS.StructuredText do
   * `dast` - the original value supplied to `DatoCMS.StructuredText.to_html/2`,
   * `options` - the options supplied to `DatoCMS.StructuredText.to_html/2`.
 
+  Renderers can either return a String or a List of Strings.
+  In the latter case, the Strings are joined together in the return value of
+  `to_html/2`.
+
   ## Required Renderers
 
   If your structured text includes blocks, inline items
