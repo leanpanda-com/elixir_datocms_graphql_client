@@ -4,12 +4,13 @@ defmodule DatoCMS.GraphqlClient.MixProject do
   def project do
     [
       app: :datocms_graphql_client,
-      version: "0.15.0",
+      version: "0.15.1",
       elixir: "~> 1.9",
       description: "Helpers for DatoCMS GraphQL access",
       package: package(),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
+      docs: docs(),
       elixirc_paths: elixirc_paths(Mix.env)
     ]
   end
@@ -38,6 +39,13 @@ defmodule DatoCMS.GraphqlClient.MixProject do
       {:memoize, ">= 1.3.0"},
       {:neuron, "~> 4.1.0"}
     ]
+  end
+
+  defp docs do
+     [
+       extras: ["README.md"],
+       main: "readme",
+     ]
   end
 
   defp elixirc_paths(:test), do: ["lib", "test/support"]
