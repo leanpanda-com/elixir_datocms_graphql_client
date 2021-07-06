@@ -101,15 +101,15 @@ defmodule DatoCMS.StructuredTextTest.CustomRenderers do
       ["</span>"]
   end
 
-  def render_inline_record(%{__typename: "ItemRecord"} = item) do
+  def render_inline_record(%{__typename: "ItemRecord"} = item, _dast, _options) do
     "<h1>#{item.title}</h1><p>#{item.body}</p>"
   end
 
-  def render_link_to_record(%{__typename: "ItemRecord"} = item, node) do
+  def render_link_to_record(%{__typename: "ItemRecord"} = item, node, _dast, _options) do
     ~s(<a href="/items/#{item.id}">#{hd(node.children).value}</a>)
   end
 
-  def render_block(%{__typename: "MyarticleblockRecord"} = block) do
+  def render_block(%{__typename: "MyarticleblockRecord"} = block, _dast, _options) do
     ~s(<div><h1>#{block.articleBlockTitle}</h1><p><img src="#{block.image.url}"></p></div>)
   end
 end
@@ -299,7 +299,7 @@ defmodule DatoCMS.StructuredTextTest do
 
   @tag structured_text: json_fixture!("inline-item")
   test "inlineItem", context do
-    options = %{renderers: %{render_inline_record: &render_inline_record/1}}
+    options = %{renderers: %{render_inline_record: &render_inline_record/3}}
     result = to_html(context.structured_text, options)
 
     expected = "<p><h1>The item title</h1><p>The body</p></p>"
@@ -330,7 +330,7 @@ defmodule DatoCMS.StructuredTextTest do
 
   @tag structured_text: json_fixture!("item-link")
   test "itemLink", context do
-    options = %{renderers: %{render_link_to_record: &render_link_to_record/2}}
+    options = %{renderers: %{render_link_to_record: &render_link_to_record/4}}
     result = to_html(context.structured_text, options)
 
     expected = "<p>A <a href=\"/items/15236536\">link</a> to an item.</p>"
@@ -361,7 +361,7 @@ defmodule DatoCMS.StructuredTextTest do
 
   @tag structured_text: json_fixture!("block")
   test "block", context do
-    options = %{renderers: %{render_block: &render_block/1}}
+    options = %{renderers: %{render_block: &render_block/3}}
     result = to_html(context.structured_text, options)
 
     expected = "<div><h1>Ciao Ciao</h1><p><img src=\"https://www.datocms-assets.com/40600/1612973334-screenshot-from-2021-01-22-18-26-44.png\"></p></div>"
