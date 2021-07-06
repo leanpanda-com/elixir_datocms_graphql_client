@@ -52,10 +52,6 @@ defmodule DatoCMS.StructuredText do
   }
   ```
 
-  ```elixir
-  DatoCMS.StructuredText.to_html(structured_text)
-  ```
-
   into this:
 
   ```html
