@@ -139,7 +139,12 @@ defmodule DatoCMS.StructuredText do
   def render(%{type: "inlineItem"} = node, dast, options) do
     with {:ok, renderer} <- renderer(options, :render_inline_record),
          {:ok, item} <- linked_item(node, dast) do
-      renderer.(item) |> list()
+      if arity(renderer) == 1 do
+        deprecation_warning(:render_inline_record, 1, 3)
+        renderer.(item) |> list()
+      else
+        renderer.(item, dast, options) |> list()
+      end
     else
       {:error, message} ->
         raise CustomRenderersError, message: message
@@ -149,7 +154,12 @@ defmodule DatoCMS.StructuredText do
   def render(%{type: "itemLink"} = node, dast, options) do
     with {:ok, renderer} <- renderer(options, :render_link_to_record),
          {:ok, item} <- linked_item(node, dast) do
-      renderer.(item, node) |> list()
+      if arity(renderer) == 2 do
+        deprecation_warning(:render_link_to_record, 2, 4)
+        renderer.(item, node) |> list()
+      else
+        renderer.(item, node, dast, options) |> list()
+      end
     else
       {:error, message} ->
         raise CustomRenderersError, message: message
@@ -159,7 +169,12 @@ defmodule DatoCMS.StructuredText do
   def render(%{type: "block"} = node, dast, options) do
     with {:ok, renderer} <- renderer(options, :render_block),
          {:ok, item} <- block(node, dast) do
-      renderer.(item) |> list()
+      if arity(renderer) == 1 do
+        deprecation_warning(:render_block, 1, 3)
+        renderer.(item) |> list()
+      else
+        renderer.(item, dast, options) |> list()
+      end
     else
       {:error, message} ->
         raise CustomRenderersError, message: message
@@ -271,4 +286,15 @@ defmodule DatoCMS.StructuredText do
 
   defp list(item) when is_list(item), do: item
   defp list(item), do: [item]
+
+  defp arity(fun), do: :erlang.fun_info(fun)[:arity]
+
+  defp deprecation_warning(renderer, old, new) do
+    IO.warn """
+    The custom renderer `#{renderer}/#{old}` parameters
+    to DatoCMS.StructuredText.to_html/2 is deprecated.
+
+    Custom renderers for `#{renderer}` now take #{new} parameters.
+    """
+  end
 end
