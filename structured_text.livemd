@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This LiveBook shows how to use the to_html/2 function of `DatoCMS.GraphQLClient`.
+This Livebook shows how to use the to_html/2 function of `DatoCMS.GraphQLClient`.
 
 ## Dependencies
 
@@ -158,7 +158,9 @@ article_04 =
     }
   }
   """)
+```
 
+```elixir
 render_link_to_record = fn _item, _node, _dast, _options -> "Hi!" end
 
 options = %{renderers: %{render_link_to_record: render_link_to_record}}
