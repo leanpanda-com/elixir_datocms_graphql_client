@@ -313,11 +313,20 @@ defmodule DatoCMS.StructuredText do
   def render(%{type: "inlineItem"} = node, dast, options) do
     with {:ok, renderer} <- renderer(options, :render_inline_record),
          {:ok, item} <- linked_item(node, dast) do
-      if arity(renderer) == 1 do
-        deprecation_warning(:render_inline_record, 1, 3)
-        renderer.(item) |> list()
-      else
-        renderer.(item, dast, options) |> list()
+      arity = arity(renderer)
+      case arity do
+        1 ->
+          deprecation_warning(:render_inline_record, 1, 3)
+          renderer.(item) |> list()
+        3 ->
+          renderer.(item, dast, options) |> list()
+        _ ->
+          message = """
+          Custom renderers for inline records take 3 parameters,
+          you passed a function with #{arity} parameters
+          as `render_inline_record`.
+          """
+          raise CustomRenderersError, message: message
       end
     else
       {:error, message} ->
@@ -328,11 +337,20 @@ defmodule DatoCMS.StructuredText do
   def render(%{type: "itemLink"} = node, dast, options) do
     with {:ok, renderer} <- renderer(options, :render_link_to_record),
          {:ok, item} <- linked_item(node, dast) do
-      if arity(renderer) == 2 do
-        deprecation_warning(:render_link_to_record, 2, 4)
-        renderer.(item, node) |> list()
-      else
-        renderer.(item, node, dast, options) |> list()
+      arity = arity(renderer)
+      case arity do
+        2 ->
+          deprecation_warning(:render_link_to_record, 2, 4)
+          renderer.(item, node) |> list()
+        4 ->
+          renderer.(item, node, dast, options) |> list()
+        _ ->
+          message = """
+          Custom renderers for links to records take 4 parameters,
+          you passed a function with #{arity} parameters
+          as `render_link_to_record`.
+          """
+          raise CustomRenderersError, message: message
       end
     else
       {:error, message} ->
@@ -343,11 +361,20 @@ defmodule DatoCMS.StructuredText do
   def render(%{type: "block"} = node, dast, options) do
     with {:ok, renderer} <- renderer(options, :render_block),
          {:ok, item} <- block(node, dast) do
-      if arity(renderer) == 1 do
-        deprecation_warning(:render_block, 1, 3)
-        renderer.(item) |> list()
-      else
-        renderer.(item, dast, options) |> list()
+      arity = arity(renderer)
+      case arity do
+        1 ->
+          deprecation_warning(:render_block, 1, 3)
+          renderer.(item) |> list()
+        3 ->
+          renderer.(item, dast, options) |> list()
+        _ ->
+          message = """
+          Custom renderers for blocks take 3 parameters,
+          you passed a function with #{arity} parameters
+          as `render_block`.
+          """
+          raise CustomRenderersError, message: message
       end
     else
       {:error, message} ->
@@ -465,7 +492,7 @@ defmodule DatoCMS.StructuredText do
 
   defp deprecation_warning(renderer, old, new) do
     IO.warn """
-    The custom renderer `#{renderer}/#{old}` parameters
+    Passing custom renderers to `#{renderer}` with #{old} parameter#{if old > 1, do: "s"}
     to DatoCMS.StructuredText.to_html/2 is deprecated.
 
     Custom renderers for `#{renderer}` now take #{new} parameters.
