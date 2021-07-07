@@ -392,7 +392,7 @@ defmodule DatoCMS.StructuredTextTest do
 
   @tag structured_text: "Wrong!"
   test "the wrong structure", context do
-    assert_raise FunctionClauseError, fn ->
+    assert_raise ArgumentError, fn ->
       to_html(context.structured_text)
     end
   end
