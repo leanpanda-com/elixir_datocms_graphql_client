@@ -29,3 +29,6 @@ as HTML is hard.
 This library provides the helper `DatoCMS.StructuredText.to_html/2`,
 which takes the structured text part of a GraphQL response and
 transforms it into HTML.
+
+This repo contains a Livebook, 'structured_text.livemd' which
+walks through how to handle the various types of rendering.

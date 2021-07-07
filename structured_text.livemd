@@ -1,0 +1,290 @@
+# Structured Text
+
+## Introduction
+
+This LiveBook shows how to use the to_html/2 function of `DatoCMS.GraphQLClient`.
+
+## Dependencies
+
+```elixir
+Mix.install([
+  {:datocms_graphql_client, "0.15.3"}
+])
+```
+
+## Configuration
+
+```elixir
+DatoCMS.GraphQLClient.configure(api_key: "b2bf6a03a90e7e800580b535ff55c1")
+```
+
+## Record Types
+
+The DatoCMS site used in these examples has two models: `Article` and `Item`.
+
+Alongside the basic `id`, `title` and `slug` fields, `Article` has a Structured Text field `body`.
+
+We can run GraphQL introspection queries to find out about Models:
+
+```elixir
+DatoCMS.GraphQLClient.query!("""
+{
+  __type(name: "ArticleRecord") {
+    fields {
+      name
+    }
+  }
+}
+""").__type.fields
+|> Enum.map(& &1.name)
+|> Enum.filter(&(!String.starts_with?(&1, "_")))
+|> Enum.sort()
+```
+
+## The Articles
+
+The 7 `Articles` are examples of different types of Structured Text content.
+
+```elixir
+DatoCMS.GraphQLClient.query!("""
+query {
+  allArticles(orderBy: title_ASC) {
+    id
+    title
+  }
+}
+""").allArticles
+```
+
+## Plain Text
+
+Let's render the simplest `Article`.
+
+First the query:
+
+```elixir
+article_01 =
+  DatoCMS.GraphQLClient.query!("""
+  query {
+    article(filter: {title: {eq: "001 Plain Text"}}) {
+      body {
+        value
+      }
+    }
+  }
+  """)
+```
+
+Now we call `to_html/2` to get an HTML rendering of the `body` field:
+
+```elixir
+DatoCMS.StructuredText.to_html(article_01.article.body)
+```
+
+## Styled Text
+
+```elixir
+article_02 =
+  DatoCMS.GraphQLClient.query!("""
+  query {
+    article(filter: {title: {eq: "002 Text Styles"}}) {
+      body {
+        value
+      }
+    }
+  }
+  """)
+```
+
+```elixir
+DatoCMS.StructuredText.to_html(article_02.article.body)
+```
+
+## Item Links
+
+Item links require additions to the query and to the rendering call.
+
+First attempt...
+
+```elixir
+article_04 =
+  DatoCMS.GraphQLClient.query!("""
+  query {
+    article(filter: {title: {eq: "004 Item Link"}}) {
+      body {
+        value
+      }
+    }
+  }
+  """)
+```
+
+Here, we can see that the text "link to item" is linked to the Item with id 15236536.
+
+```elixir
+DatoCMS.StructuredText.to_html(article_04.article.body)
+```
+
+Fail!
+
+We need to pass an `options` parameter with a custom renderer for links to DatoCMS records.
+For now, we'll just supply a rendering function that returns "Hi!" for any node.
+
+```elixir
+render_link_to_record = fn _item, _node, _dast, _options -> "Hi!" end
+
+options = %{renderers: %{render_link_to_record: render_link_to_record}}
+DatoCMS.StructuredText.to_html(article_04.article.body, options)
+```
+
+Fail!
+
+Let's update the query to get `links` so we have the info about Item 15236536.
+
+```elixir
+article_04 =
+  DatoCMS.GraphQLClient.query!("""
+  query {
+    article(filter: {title: {eq: "004 Item Link"}}) {
+      body {
+        value
+        links {
+          ... on ItemRecord {
+            id
+            slug
+          }
+        }
+      }
+    }
+  }
+  """)
+
+render_link_to_record = fn _item, _node, _dast, _options -> "Hi!" end
+
+options = %{renderers: %{render_link_to_record: render_link_to_record}}
+DatoCMS.StructuredText.to_html(article_04.article.body, options)
+```
+
+OK, that works, but we want to render a proper link.
+
+Let's create a better function
+
+```elixir
+render_link_to_record = fn item, node, _dast, _options ->
+  text = hd(node.children).value
+  ~s(<a href="#{item.slug}">#{text}</a>)
+end
+
+options = %{renderers: %{render_link_to_record: render_link_to_record}}
+DatoCMS.StructuredText.to_html(article_04.article.body, options)
+```
+
+That's OK, but we're cheating a bit - we're taking the value of the first child node.
+
+What if the linked content is not just a simple text?
+
+Nodes have a list of children which could contain any type of content.
+
+We can use DatoCMS.StructuredText.render/3 to get the correct rendering for any content that might be linked there.
+
+```elixir
+render_link_to_record = fn item, node, dast, options ->
+  content = Enum.flat_map(node.children, &DatoCMS.StructuredText.render(&1, dast, options))
+  [~s(<a href="#{item.slug}">)] ++ content ++ ["</a>"]
+end
+
+options = %{renderers: %{render_link_to_record: render_link_to_record}}
+DatoCMS.StructuredText.to_html(article_04.article.body, options)
+```
+
+That's more complex, but it handles any case.
+
+Note that we're switched from returning a String to returning a List,
+which is easier for us as `content` is a List, being the result of rendering all the
+`node`'s children. Custom rendering functions can return a String or a List,
+whatever you find more convenient.
+
+## Blocks
+
+```elixir
+article_05 =
+  DatoCMS.GraphQLClient.query!("""
+  query {
+    article(filter: {title: {eq: "005 Structures"}}) {
+      body {
+        value
+      }
+    }
+  }
+  """)
+```
+
+Here we've got examples of various block types:
+
+```elixir
+article_05.article.body.value.document.children
+|> Enum.map(&{&1.type, &1[:style] || &1[:level]})
+```
+
+```elixir
+DatoCMS.StructuredText.to_html(article_05.article.body)
+```
+
+## Inline Records
+
+```elixir
+article_06 =
+  DatoCMS.GraphQLClient.query!("""
+  {
+    article(filter: {title: {eq: "006 Inline records"}}) {
+      body {
+        value
+        links {
+          ... on ArticleRecord {
+            id
+            title
+          }
+        }
+      }
+    }
+  }
+  """)
+```
+
+```elixir
+render_inline_record = fn item, _, _ -> ~s("#{item.title}") end
+
+options = %{renderers: %{render_inline_record: render_inline_record}}
+DatoCMS.StructuredText.to_html(article_06.article.body, options)
+```
+
+## Custom Blocks
+
+```elixir
+article_07 =
+  DatoCMS.GraphQLClient.query!("""
+  {
+    article(filter: {title: {eq: "007 Custom Blocks"}}) {
+      body {
+        value
+        blocks {
+          ... on MyarticleblockRecord {
+            id
+            articleBlockTitle
+            image {
+              url
+            }
+          }
+        }
+      }
+    }
+  }  
+  """)
+```
+
+```elixir
+render_block = fn block, _, _ -> ~s("#{block.articleBlockTitle}") end
+
+options = %{renderers: %{render_block: render_block}}
+DatoCMS.StructuredText.to_html(article_07.article.body, options)
+```
